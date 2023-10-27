@@ -1,0 +1,11 @@
+version: '3.9'
+services:
+  api:
+    build: .
+    ports:
+      - ${PORT}:${PORT}
+    environment:
+      - K_SERVICE=${K_SERVICE}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${PORT}
