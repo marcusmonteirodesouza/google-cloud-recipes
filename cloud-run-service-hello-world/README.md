@@ -1,6 +1,6 @@
 # Google Cloud Recipe - Cloud Run Service - Hello, World!
 
-A [Hello, World!](https://en.wikipedia.org/wiki/%22Hello,_World!%22_program) [Express](https://expressjs.com/) web application served from [Cloud Run](https://cloud.google.com/run/docs/overview/what-is-cloud-run#services), deployed in multiple [regions](https://cloud.google.com/about/locations#regions), behind a [Global HTTP Load Balancer](https://cloud.google.com/compute/docs/instance-groups/adding-an-instance-group-to-a-load-balancer).
+A [Hello, World!](https://en.wikipedia.org/wiki/%22Hello,_World!%22_program) [Express](https://expressjs.com/) web application served from [Cloud Run](https://cloud.google.com/run/docs/overview/what-is-cloud-run#services), behind a [Regional External Application Load Balancer](https://cloud.google.com/load-balancing/docs/https). This recipe aims to comply with [data residency](https://en.wikipedia.org/wiki/Data_localization) requirements.
 
 Provisioned with [terraform](https://www.terraform.io/).
 
@@ -43,8 +43,7 @@ Provisioned with [terraform](https://www.terraform.io/).
 1. Run `terraform apply -target=module.enable_apis`.
 1. Run `terraform apply -target=module.iam`.
 1. Run `terraform apply`.
-1. Use the `regional_http_load_balancer_ip_address` output value to [Configure DNS records on your domain](https://cloud.google.com/run/docs/multiple-regions#dns-config).
-1. [Check the SSL certificate's status](https://cloud.google.com/load-balancing/docs/ssl-certificates/troubleshooting?&_ga=2.132601358.-1078491006.1698074745#certificate-managed-status) by running `gcloud compute ssl-certificates describe <regional_http_load_balancer_ssl_certificate_name output> --global --format="get(name,managed.status)"` and wait for the status to be `ACTIVE`.
+1. Use the `regional_external_application_load_balancer_ip_address` output value to [Configure DNS records on your domain](https://cloud.google.com/run/docs/multiple-regions#dns-config).
 
 ### (Optional) Use GCS backend for the terraform state.
 
@@ -53,5 +52,5 @@ Provisioned with [terraform](https://www.terraform.io/).
 
 ## Testing the API
 
-1. Run `curl -k "https://<your domain name>"`. You should see the response `{"message":"Hello, World!"}`.
+1. Run `curl https://<your domain name>` (or `curl -k https://<your domain name>` if you used a self-signed certificate). You should see the response `{"message":"Hello, World!"}`.
 1. If it returns an error such as `curl: (35) LibreSSL/3.3.6: error:1404B410:SSL routines:ST_CONNECT:sslv3 alert handshake failure` then wait a few minutes and try again.

@@ -54,17 +54,17 @@ module "api" {
   default_confidential_crypto_key_id = module.kms.default_confidential_crypto_key_id
 }
 
-resource "google_compute_address" "regional_http_load_balancer" {
-  name         = "regional-http-load-balancer-address"
+resource "google_compute_address" "regional_external_application_load_balancer" {
+  name         = "regional-external-application-lb-address"
   network_tier = "STANDARD"
 }
 
-module "regional_http_load_balancer" {
-  source = "./modules/regional_http_load_balancer"
+module "regional_external_application_load_balancer" {
+  source = "./modules/regional_external_application_load_balancer"
 
   network_name                = module.network.network_name
   ssl_certificate             = var.ssl_certificate
   ssl_certificate_private_key = var.ssl_certificate_private_key
-  google_compute_address_id   = google_compute_address.regional_http_load_balancer.id
+  google_compute_address_id   = google_compute_address.regional_external_application_load_balancer.id
   api_cloud_run_service_name  = module.api.api_cloud_run_service_name
 }
