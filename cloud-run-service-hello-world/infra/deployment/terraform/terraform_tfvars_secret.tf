@@ -7,7 +7,7 @@ resource "google_secret_manager_secret" "terraform_tfvars" {
         location = "northamerica-northeast1"
 
         customer_managed_encryption {
-          kms_key_name = module.kms.default_northamerica_northeast1_confidential_crypto_key_id
+          kms_key_name = module.kms.default_confidential_crypto_key_id
         }
       }
     }

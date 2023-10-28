@@ -8,7 +8,7 @@ resource "google_artifact_registry_repository" "api" {
   location      = "northamerica-northeast1"
   repository_id = "api-docker-repo"
   format        = "DOCKER"
-  kms_key_name  = var.default_northamerica_northeast1_confidential_crypto_key_id
+  kms_key_name  = var.default_confidential_crypto_key_id
 }
 
 resource "google_artifact_registry_repository_iam_member" "api_sa" {

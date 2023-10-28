@@ -38,40 +38,33 @@ module "kms" {
 module "iam" {
   source = "./modules/iam"
 
-  default_northamerica_northeast1_confidential_crypto_key_id = module.kms.default_northamerica_northeast1_confidential_crypto_key_id
-  default_northamerica_northeast2_confidential_crypto_key_id = module.kms.default_northamerica_northeast2_confidential_crypto_key_id
+  default_confidential_crypto_key_id = module.kms.default_confidential_crypto_key_id
+}
+
+module "network" {
+  source = "./modules/network"
+
+  environment = var.environment
 }
 
 module "api" {
   source = "./modules/api"
 
-  default_northamerica_northeast1_confidential_crypto_key_id = module.kms.default_northamerica_northeast1_confidential_crypto_key_id
-  api_sa_email                                               = module.iam.api_sa_email
-  api_cloud_run_services_configs = {
-    northamerica-northeast1 = {
-      kms_crypto_key_id = module.kms.default_northamerica_northeast1_confidential_crypto_key_id
-    }
-    northamerica-northeast2 = {
-      kms_crypto_key_id = module.kms.default_northamerica_northeast2_confidential_crypto_key_id
-    }
-  }
+  api_sa_email                       = module.iam.api_sa_email
+  default_confidential_crypto_key_id = module.kms.default_confidential_crypto_key_id
 }
 
-resource "google_compute_global_address" "global_http_load_balancer" {
-  name = "global-http-load-balancer-address"
+resource "google_compute_address" "regional_http_load_balancer" {
+  name         = "regional-http-load-balancer-address"
+  network_tier = "STANDARD"
 }
 
-module "global_http_load_balancer" {
-  source = "./modules/global_http_load_balancer"
+module "regional_http_load_balancer" {
+  source = "./modules/regional_http_load_balancer"
 
-  domain_names                     = var.domain_names
-  google_compute_global_address_id = google_compute_global_address.global_http_load_balancer.id
-  api_cloud_run_services_names = {
-    northamerica-northeast1 = {
-      name = module.api.api_cloud_run_services_names.northamerica-northeast1.name
-    }
-    northamerica-northeast2 = {
-      name = module.api.api_cloud_run_services_names.northamerica-northeast2.name
-    }
-  }
+  network_name                = module.network.network_name
+  ssl_certificate             = var.ssl_certificate
+  ssl_certificate_private_key = var.ssl_certificate_private_key
+  google_compute_address_id   = google_compute_address.regional_http_load_balancer.id
+  api_cloud_run_service_name  = module.api.api_cloud_run_service_name
 }

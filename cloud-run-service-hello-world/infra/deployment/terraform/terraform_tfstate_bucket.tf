@@ -12,7 +12,7 @@ resource "google_storage_bucket" "tfstate" {
   }
 
   encryption {
-    default_kms_key_name = module.kms.default_northamerica_northeast1_confidential_crypto_key_id
+    default_kms_key_name = module.kms.default_confidential_crypto_key_id
   }
 
   depends_on = [

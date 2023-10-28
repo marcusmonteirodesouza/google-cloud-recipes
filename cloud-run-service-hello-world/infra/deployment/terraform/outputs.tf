@@ -1,9 +1,9 @@
-output "global_http_load_balancer_ip_address" {
-  value = google_compute_global_address.global_http_load_balancer.address
+output "regional_http_load_balancer_ip_address" {
+  value = google_compute_address.regional_http_load_balancer.address
 }
 
-output "global_http_load_balancer_ssl_certificate_name" {
-  value = module.global_http_load_balancer.ssl_certificate_name
+output "regional_http_load_balancer_ssl_certificate_name" {
+  value = module.regional_http_load_balancer.ssl_certificate_name
 }
 
 output "terraform_tfstate_bucket" {

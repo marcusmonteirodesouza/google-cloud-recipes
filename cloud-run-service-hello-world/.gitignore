@@ -274,3 +274,6 @@ $RECYCLE.BIN/
 
 #
 build
+
+#
+*.pem
