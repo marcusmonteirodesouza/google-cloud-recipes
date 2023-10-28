@@ -39,7 +39,6 @@ resource "google_compute_region_url_map" "lb_default" {
   }
 }
 
-# TODO(Marcus): See about using a RegionSslCertificate https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_region_ssl_certificate
 resource "google_compute_region_ssl_certificate" "lb_default" {
   name        = "${local.service_name}-ssl-cert"
   certificate = var.ssl_certificate
