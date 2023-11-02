@@ -1,6 +1,10 @@
+variable "company_name" {
+  default = "gcloudrecipes"
+}
+
 variable "environment" {
-  type        = string
-  description = "The deployment environment."
+  default     = "dev"
+  description = "Deployment environment."
 }
 
 variable "project_id" {

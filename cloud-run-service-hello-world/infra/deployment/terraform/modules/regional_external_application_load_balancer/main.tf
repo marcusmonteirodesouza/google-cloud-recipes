@@ -40,7 +40,7 @@ resource "google_compute_region_url_map" "lb_default" {
 }
 
 resource "google_compute_region_ssl_certificate" "lb_default" {
-  name        = "${local.service_name}-ssl-cert"
+  name        = "${local.service_name}-self-managed-ssl-cert"
   certificate = var.ssl_certificate
   private_key = var.ssl_certificate_private_key
 

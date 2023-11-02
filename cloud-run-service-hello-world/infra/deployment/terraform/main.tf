@@ -44,7 +44,8 @@ module "iam" {
 module "network" {
   source = "./modules/network"
 
-  environment = var.environment
+  company_name = var.company_name
+  environment  = var.environment
 }
 
 module "api" {

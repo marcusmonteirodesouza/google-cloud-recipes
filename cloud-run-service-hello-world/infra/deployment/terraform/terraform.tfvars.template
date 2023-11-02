@@ -1,0 +1,9 @@
+project_id                  = "my-project-id"
+ssl_certificate             = <<-EOT
+My SSL certificate in PEM format
+EOT
+ssl_certificate_private_key = <<-EOT
+-----BEGIN PRIVATE KEY-----
+My SSL certificate private key in PEM format
+-----END PRIVATE KEY-----
+EOT
