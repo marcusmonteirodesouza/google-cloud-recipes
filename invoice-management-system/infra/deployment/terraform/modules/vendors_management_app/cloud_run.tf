@@ -1,3 +1,8 @@
+locals {
+  service_name         = "vendors-management-app"
+  backend_service_name = "${local.service_name}-backend"
+}
+
 resource "google_artifact_registry_repository_iam_member" "vendors_management_app_sa_vendors_management_app_repository" {
   location   = google_artifact_registry_repository.vendors_management_app.location
   repository = google_artifact_registry_repository.vendors_management_app.name
@@ -6,7 +11,7 @@ resource "google_artifact_registry_repository_iam_member" "vendors_management_ap
 }
 
 resource "google_cloud_run_v2_service" "vendors_management_app" {
-  name     = "vendors-management-app"
+  name     = local.service_name
   location = "northamerica-northeast1"
   ingress  = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 
@@ -33,6 +38,22 @@ resource "google_cloud_run_v2_service" "vendors_management_app" {
         }
       }
 
+      env {
+        name  = "GOOGLE_CLOUD_BACKEND_SERVICE_NAME"
+        value = local.backend_service_name
+      }
+      env {
+        name  = "GOOGLE_CLOUD_REGION"
+        value = "northamerica-northeast1"
+      }
+      env {
+        name  = "GOOGLE_CLOUD_PROJECT_ID"
+        value = data.google_project.project.project_id
+      }
+      env {
+        name  = "GOOGLE_CLOUD_PROJECT_NUMBER"
+        value = data.google_project.project.number
+      }
       env {
         name  = "LOG_LEVEL"
         value = "info"

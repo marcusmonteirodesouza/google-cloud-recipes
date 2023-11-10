@@ -80,8 +80,10 @@ module "load_balancer" {
   default_confidential_crypto_key_id            = module.kms.default_confidential_crypto_key_id
   trust_network_name                            = module.network.trust_network_name
   vendors_management_app_cloud_run_service_name = module.vendors_management_app.name
+  vendors_management_app_backend_service_name   = module.vendors_management_app.backend_service_name
   vendors_management_app_iap_client_id          = module.vendors_management_app.iap_client_id
   vendors_management_app_iap_client_secret      = module.vendors_management_app.iap_client_secret
+  vendors_management_app_sa_email               = module.iam.vendors_management_app_sa_email
   vendors_management_app_users_group            = var.vendors_management_app_users_group
   ssl_certificate                               = var.ssl_certificate
   ssl_certificate_private_key                   = var.ssl_certificate_private_key

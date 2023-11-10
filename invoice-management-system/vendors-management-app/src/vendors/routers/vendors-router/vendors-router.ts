@@ -23,7 +23,10 @@ class VendorsRouter {
           ],
         });
 
-        return res.render('vendors', {title: 'Vendors list', vendors});
+        return res.render('vendors', {
+          title: 'Vendors list',
+          vendors,
+        });
       } catch (err) {
         return next(err);
       }
@@ -31,7 +34,10 @@ class VendorsRouter {
 
     router.get('/add', async (req, res, next) => {
       try {
-        return res.render('vendors/add', {title: 'Add Vendor', errors: []});
+        return res.render('vendors/add', {
+          title: 'Add Vendor',
+          errors: [],
+        });
       } catch (err) {
         return next(err);
       }
@@ -45,7 +51,10 @@ class VendorsRouter {
           await this.options.vendorsClient.createVendor(name, address);
         } catch (err) {
           if (err instanceof ErrorResponse) {
-            return res.render('vendors/add', {errors: [err.message]});
+            return res.render('vendors/add', {
+              title: 'Add Vendor',
+              errors: [err.message],
+            });
           }
           req.log.error(err);
           throw err;

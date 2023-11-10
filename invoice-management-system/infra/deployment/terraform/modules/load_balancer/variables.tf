@@ -8,9 +8,19 @@ variable "trust_network_name" {
   description = "Trust VPC network name."
 }
 
+variable "vendors_management_app_backend_service_name" {
+  type        = string
+  description = "Cloud Load Balancing Vendors Management App Backend Service name."
+}
+
 variable "vendors_management_app_cloud_run_service_name" {
   type        = string
   description = "Vendors Management App Cloud Run service name."
+}
+
+variable "vendors_management_app_sa_email" {
+  type        = string
+  description = "Vendors Management App Service Account email."
 }
 
 variable "vendors_management_app_users_group" {

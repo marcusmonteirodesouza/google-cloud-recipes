@@ -8,7 +8,7 @@ resource "google_compute_region_network_endpoint_group" "vendors_management_app_
 }
 
 resource "google_compute_region_backend_service" "vendors_management_app_service" {
-  name                  = "${var.vendors_management_app_cloud_run_service_name}-backend"
+  name                  = var.vendors_management_app_backend_service_name
   region                = "northamerica-northeast1"
   load_balancing_scheme = "EXTERNAL_MANAGED"
 
@@ -22,6 +22,15 @@ resource "google_compute_region_backend_service" "vendors_management_app_service
     oauth2_client_id     = var.vendors_management_app_iap_client_id
     oauth2_client_secret = var.vendors_management_app_iap_client_secret
   }
+}
+
+resource "google_compute_region_backend_service_iam_member" "vendors_management_app_service_vendors_management_app_sa" {
+  provider = google-beta
+  project  = google_compute_region_backend_service.vendors_management_app_service.project
+  name     = google_compute_region_backend_service.vendors_management_app_service.name
+  region   = google_compute_region_backend_service.vendors_management_app_service.region
+  role     = "roles/compute.viewer"
+  member   = "serviceAccount:${var.vendors_management_app_sa_email}"
 }
 
 resource "google_iap_web_region_backend_service_iam_member" "vendors_management_app_service" {
