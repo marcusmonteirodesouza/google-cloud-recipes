@@ -11,23 +11,25 @@ interface OrderByClause {
 }
 
 interface ListVendorsOptions {
+  name?: string;
   orderBy?: OrderByClause[];
 }
 
 class VendorsClient {
   constructor(private readonly options: VendorsOptions) {}
 
-  async createVendor(name: string, address: string): Promise<Vendor> {
-    const {data: vendor} = await axios.post(this.options.baseUrl, {
-      name,
-      address,
-    });
+  async getVendorById(vendorId: string): Promise<Vendor> {
+    const {data: vendor} = await axios.get(`${this.options.baseUrl}/${vendorId}`);
 
     return vendor;
   }
 
   async listVendors(options?: ListVendorsOptions): Promise<Vendor[]> {
-    const params: {orderBy?: string} = {};
+    const params: {name?: string, orderBy?: string} = {};
+
+    if (options?.name) {
+      params.name = options.name
+    }
 
     if (options?.orderBy) {
       params.orderBy = options.orderBy.slice(1).reduce((acc, orderByClause) => {
@@ -40,10 +42,6 @@ class VendorsClient {
     });
 
     return vendors;
-  }
-
-  async deleteVendorById(vendorId: string): Promise<void> {
-    await axios.delete(`${this.options.baseUrl}/${vendorId}`);
   }
 
   private orderByClauseToQueryParamClause(

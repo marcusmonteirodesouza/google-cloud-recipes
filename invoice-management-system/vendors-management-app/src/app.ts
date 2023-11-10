@@ -29,10 +29,10 @@ async function createApp() {
         id: config.google.project.id,
         number: config.google.project.number,
       },
+      oAuth2Client,
       region: config.google.region,
+      regionBackendServicesClient,
     },
-    oAuth2Client,
-    regionBackendServicesClient,
   });
 
   const vendorsClient = new VendorsClient({

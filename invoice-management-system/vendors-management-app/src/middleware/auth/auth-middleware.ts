@@ -13,10 +13,10 @@ interface AuthOptions {
       id: string;
       number: number;
     };
+    oAuth2Client: OAuth2Client;
     region: string;
+    regionBackendServicesClient: RegionBackendServicesClient;
   };
-  oAuth2Client: OAuth2Client;
-  regionBackendServicesClient: RegionBackendServicesClient;
 }
 
 class Auth {
@@ -55,19 +55,19 @@ class Auth {
   private async getUser(iapJwt: string): Promise<User> {
     // See https://cloud.google.com/iap/docs/signed-headers-howto#retrieving_the_user_identity
     const [getRegionBackendServiceResponse] =
-      await this.options.regionBackendServicesClient.get({
+      await this.options.google.regionBackendServicesClient.get({
         backendService: this.options.google.backendService.name,
         project: this.options.google.project.id,
         region: this.options.google.region,
       });
 
     const iapPublicKeysResponse =
-      await this.options.oAuth2Client.getIapPublicKeys();
+      await this.options.google.oAuth2Client.getIapPublicKeys();
 
     const expectedAudience = `/projects/${this.options.google.project.number}/${this.options.google.region}/backendServices/${getRegionBackendServiceResponse.id}`;
 
     const ticket =
-      await this.options.oAuth2Client.verifySignedJwtWithCertsAsync(
+      await this.options.google.oAuth2Client.verifySignedJwtWithCertsAsync(
         iapJwt,
         iapPublicKeysResponse.pubkeys,
         expectedAudience,
