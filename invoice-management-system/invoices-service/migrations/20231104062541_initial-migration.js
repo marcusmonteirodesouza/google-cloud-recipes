@@ -18,6 +18,18 @@ exports.up = async function (knex) {
         })
         .defaultTo('inReview');
 
+      table.date('date').notNullable();
+
+      table.date('due_date').notNullable();
+
+      table.decimal('net_amount').notNullable();
+
+      table.decimal('total_tax_amount').notNullable();
+
+      table.decimal('total_amount').notNullable();
+
+      table.string('currency', 3).notNullable();
+
       table.timestamps(true, true);
     });
   }
