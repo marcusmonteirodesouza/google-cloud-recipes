@@ -1,2 +1,3 @@
+export {Vendor} from './models';
 export {VendorsClient} from './vendors-client';
-export {ErrorResponse} from './errors';
+export {ErrorResponse, ErrorResponseCode} from './errors';

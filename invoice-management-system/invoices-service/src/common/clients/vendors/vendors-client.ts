@@ -1,5 +1,6 @@
-import axios from 'axios';
+import axios, {isAxiosError} from 'axios';
 import {Vendor} from './models';
+import {ErrorResponse} from './errors';
 
 interface VendorsOptions {
   baseUrl: string;
@@ -19,29 +20,53 @@ class VendorsClient {
   constructor(private readonly options: VendorsOptions) {}
 
   async getVendorById(vendorId: string): Promise<Vendor> {
-    const {data: vendor} = await axios.get(`${this.options.baseUrl}/${vendorId}`);
+    try {
+      const {data: vendor} = await axios.get(
+        `${this.options.baseUrl}/${vendorId}`
+      );
 
-    return vendor;
+      return vendor;
+    } catch (err) {
+      throw this.tryMakeErrorResponse(err);
+    }
   }
 
   async listVendors(options?: ListVendorsOptions): Promise<Vendor[]> {
-    const params: {name?: string, orderBy?: string} = {};
+    try {
+      const params: {name?: string; orderBy?: string} = {};
 
-    if (options?.name) {
-      params.name = options.name
+      if (options?.name) {
+        params.name = options.name;
+      }
+
+      if (options?.orderBy) {
+        params.orderBy = options.orderBy
+          .slice(1)
+          .reduce((acc, orderByClause) => {
+            return `${acc} ${this.orderByClauseToQueryParamClause(
+              orderByClause
+            )}`;
+          }, this.orderByClauseToQueryParamClause(options.orderBy[0]));
+      }
+
+      const {data: vendors} = await axios.get(this.options.baseUrl, {
+        params,
+      });
+
+      return vendors;
+    } catch (err) {
+      throw this.tryMakeErrorResponse(err);
     }
+  }
 
-    if (options?.orderBy) {
-      params.orderBy = options.orderBy.slice(1).reduce((acc, orderByClause) => {
-        return `${acc} ${this.orderByClauseToQueryParamClause(orderByClause)}`;
-      }, this.orderByClauseToQueryParamClause(options.orderBy[0]));
+  private tryMakeErrorResponse(err: unknown) {
+    if (isAxiosError(err)) {
+      return new ErrorResponse(
+        err.response?.data.code,
+        err.response?.data.message
+      );
     }
-
-    const {data: vendors} = await axios.get(this.options.baseUrl, {
-      params,
-    });
-
-    return vendors;
+    return err;
   }
 
   private orderByClauseToQueryParamClause(

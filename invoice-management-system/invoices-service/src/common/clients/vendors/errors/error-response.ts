@@ -1,7 +1,19 @@
+enum ErrorResponseCode {
+  AlreadyExists = 'alreadyExists',
+  Forbidden = 'forbidden',
+  GeneralException = 'generalException',
+  InvalidRequest = 'invalidRequest',
+  NotFound = 'notFound',
+  Unauthorized = 'unauthorized',
+}
+
 class ErrorResponse extends Error {
-  constructor(code?: string, message?: string) {
+  constructor(
+    readonly code?: ErrorResponseCode,
+    message?: string
+  ) {
     super(message);
   }
 }
 
-export {ErrorResponse};
+export {ErrorResponse, ErrorResponseCode};

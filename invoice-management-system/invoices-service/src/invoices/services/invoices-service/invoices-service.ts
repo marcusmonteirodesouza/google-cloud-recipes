@@ -1,12 +1,18 @@
 import {Knex} from 'knex';
-import {VendorsClient} from '../../../common/clients/vendors'
+import {
+  ErrorResponse,
+  ErrorResponseCode,
+  Vendor,
+  VendorsClient,
+} from '../../../common/clients/vendors';
 import {Invoice} from '../../models';
+import {NotFoundError} from '../../../errors';
 
 interface InvoicesServiceOptions {
   db: Knex;
   vendors: {
-    client: VendorsClient
-  }
+    client: VendorsClient;
+  };
 }
 
 class InvoicesService {
@@ -15,16 +21,27 @@ class InvoicesService {
   constructor(private readonly options: InvoicesServiceOptions) {}
 
   async createInvoice(vendorId: string): Promise<Invoice> {
-    const vendor = await this.options.vendors.client.getVendorById(vendorId);
+    let vendor!: Vendor;
 
-      const [invoice] = await this.options
-        .db<Invoice>(this.invoicesTable)
-        .insert({
-          vendorId: vendor.id,
-        })
-        .returning('*');
+    try {
+      vendor = await this.options.vendors.client.getVendorById(vendorId);
+    } catch (err) {
+      if (err instanceof ErrorResponse) {
+        if (err.code === ErrorResponseCode.NotFound) {
+          throw new NotFoundError(`Vendor ${vendorId} not found`);
+        }
+        throw err;
+      }
+    }
 
-      return invoice;
+    const [invoice] = await this.options
+      .db<Invoice>(this.invoicesTable)
+      .insert({
+        vendorId: vendor.id,
+      })
+      .returning('*');
+
+    return invoice;
   }
 }
 

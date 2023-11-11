@@ -85,18 +85,26 @@ class VendorsRouter {
       }
     );
 
-    router.get('/:vendorId', async (req, res, next) => {
-      try {
-        const {vendorId} = req.params;
+    router.get(
+      '/:vendorId',
+      celebrate({
+        [Segments.PARAMS]: Joi.object().keys({
+          vendorId: Joi.string().uuid().required(),
+        }),
+      }),
+      async (req, res, next) => {
+        try {
+          const {vendorId} = req.params;
 
-        const vendor =
-          await this.options.vendorsService.getVendorById(vendorId);
+          const vendor =
+            await this.options.vendorsService.getVendorById(vendorId);
 
-        return res.json(vendor);
-      } catch (err) {
-        return next(err);
+          return res.json(vendor);
+        } catch (err) {
+          return next(err);
+        }
       }
-    });
+    );
 
     router.delete('/:vendorId', async (req, res, next) => {
       try {

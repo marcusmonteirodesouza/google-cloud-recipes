@@ -9,12 +9,12 @@ import {
 } from '../errors';
 
 enum ErrorResponseCode {
-  alreadyExists = 'alreadyExists',
-  forbidden = 'forbidden',
-  generalException = 'generalException',
-  invalidRequest = 'invalidRequest',
-  notFound = 'notFound',
-  unauthorized = 'unauthorized',
+  AlreadyExists = 'alreadyExists',
+  Forbidden = 'forbidden',
+  GeneralException = 'generalException',
+  InvalidRequest = 'invalidRequest',
+  NotFound = 'notFound',
+  Unauthorized = 'unauthorized',
 }
 
 class ErrorResponse {
@@ -39,7 +39,7 @@ class ErrorHandler {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json(
-          new ErrorResponse(ErrorResponseCode.invalidRequest, errorMessage)
+          new ErrorResponse(ErrorResponseCode.InvalidRequest, errorMessage)
         );
     }
 
@@ -47,27 +47,27 @@ class ErrorHandler {
       return res
         .status(StatusCodes.CONFLICT)
         .json(
-          new ErrorResponse(ErrorResponseCode.alreadyExists, error.message)
+          new ErrorResponse(ErrorResponseCode.AlreadyExists, error.message)
         );
     }
 
     if (error instanceof ForbiddenError) {
       return res
         .status(StatusCodes.FORBIDDEN)
-        .json(new ErrorResponse(ErrorResponseCode.forbidden, error.message));
+        .json(new ErrorResponse(ErrorResponseCode.Forbidden, error.message));
     }
 
     if (error instanceof NotFoundError) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json(new ErrorResponse(ErrorResponseCode.notFound, error.message));
+        .json(new ErrorResponse(ErrorResponseCode.NotFound, error.message));
     }
 
     if (error instanceof RangeError) {
       return res
         .status(StatusCodes.UNPROCESSABLE_ENTITY)
         .json(
-          new ErrorResponse(ErrorResponseCode.invalidRequest, error.message)
+          new ErrorResponse(ErrorResponseCode.InvalidRequest, error.message)
         );
     }
 
@@ -75,7 +75,7 @@ class ErrorHandler {
       return res
         .status(StatusCodes.UNAUTHORIZED)
         .json(
-          new ErrorResponse(ErrorResponseCode.unauthorized, 'unauthorized')
+          new ErrorResponse(ErrorResponseCode.Unauthorized, 'unauthorized')
         );
     }
 
@@ -83,7 +83,7 @@ class ErrorHandler {
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json(
         new ErrorResponse(
-          ErrorResponseCode.generalException,
+          ErrorResponseCode.GeneralException,
           'internal server error'
         )
       );

@@ -15,7 +15,7 @@ const envVarsSchema = Joi.object()
     PGPOOL_MIN_CONNECTIONS: Joi.number().integer().required(),
     PGPOOL_MAX_CONNECTIONS: Joi.number().integer().required(),
     PORT: Joi.number().integer().required(),
-    VENDORS_SERVICE_BASE_URL: Joi.string().uri().required()
+    VENDORS_SERVICE_BASE_URL: Joi.string().uri().required(),
   })
   .unknown();
 
@@ -43,8 +43,8 @@ const config = {
     },
   },
   vendorsService: {
-    baseUrl: envVars.VENDORS_SERVICE_BASE_URL
-  }
+    baseUrl: envVars.VENDORS_SERVICE_BASE_URL,
+  },
 };
 
 export {config};

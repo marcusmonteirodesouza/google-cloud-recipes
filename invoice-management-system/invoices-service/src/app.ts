@@ -5,7 +5,7 @@ import {HealthCheckRouter} from './health-check';
 import {InvoicesService, InvoicesRouter} from './invoices';
 import {errorHandler} from './error-handler';
 import {config} from './config';
-import { VendorsClient } from './common/clients/vendors';
+import {VendorsClient} from './common/clients/vendors';
 
 async function createApp() {
   const db = connect();
@@ -13,19 +13,22 @@ async function createApp() {
   await db.migrate.latest();
 
   const vendorsClient = new VendorsClient({
-    baseUrl: config.vendorsService.baseUrl
+    baseUrl: config.vendorsService.baseUrl,
   });
 
   const invoicesService = new InvoicesService({
     db,
     vendors: {
-      client: vendorsClient
-    }
+      client: vendorsClient,
+    },
   });
 
   const healthCheckRouter = new HealthCheckRouter({db}).router;
 
-  const invoicesRouter = new InvoicesRouter({vendors: {client: vendorsClient}, invoices: {service: invoicesService}}).router;
+  const invoicesRouter = new InvoicesRouter({
+    vendors: {client: vendorsClient},
+    invoices: {service: invoicesService},
+  }).router;
 
   const app = express();
 

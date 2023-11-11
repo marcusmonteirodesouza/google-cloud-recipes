@@ -9,6 +9,12 @@ exports.up = async function (knex) {
         .uuid('id', {primaryKey: true})
         .defaultTo(knex.raw('gen_random_uuid()'));
       table.string('vendor_id').notNullable();
+      table
+        .enu('status', ['created', 'inReview', 'approved', 'denied'], {
+          useNative: true,
+          enumName: 'invoice_status',
+        })
+        .defaultTo('created');
       table.timestamps(true, true);
     });
   }
