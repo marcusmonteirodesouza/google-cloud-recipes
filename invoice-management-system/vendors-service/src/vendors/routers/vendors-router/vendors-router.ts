@@ -41,11 +41,14 @@ class VendorsRouter {
       '/',
       celebrate({
         [Segments.QUERY]: Joi.object().keys({
+          name: Joi.string(),
           orderBy: Joi.string(),
         }),
       }),
       async (req, res, next) => {
         try {
+          const {name} = req.query;
+
           const orderByQueryParam = req.query.orderBy as string;
 
           let orderBy: {
@@ -75,6 +78,7 @@ class VendorsRouter {
           }
 
           const vendors = await this.options.vendorsService.listVendors({
+            name: name as string,
             orderBy,
           });
 

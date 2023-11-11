@@ -38,7 +38,8 @@ module "kms" {
 module "iam" {
   source = "./modules/iam"
 
-  default_confidential_crypto_key_id = module.kms.default_confidential_crypto_key_id
+  default_confidential_crypto_key_id    = module.kms.default_confidential_crypto_key_id
+  documentai_confidential_crypto_key_id = module.kms.documentai_confidential_crypto_key_id
 }
 
 module "network" {
@@ -55,6 +56,17 @@ module "vendors_service" {
   trust_network_name                                    = module.network.trust_network_name
   trust_vpc_access_connector_northamerica_northeast1_id = module.network.trust_vpc_access_connector_northamerica_northeast1_id
   vendors_service_sa_email                              = module.iam.vendors_service_sa_email
+}
+
+module "invoices_service" {
+  source = "./modules/invoices_service"
+
+  default_confidential_crypto_key_id                    = module.kms.default_confidential_crypto_key_id
+  documentai_confidential_crypto_key_id                 = module.kms.documentai_confidential_crypto_key_id
+  trust_network_name                                    = module.network.trust_network_name
+  trust_vpc_access_connector_northamerica_northeast1_id = module.network.trust_vpc_access_connector_northamerica_northeast1_id
+  invoices_service_sa_email                             = module.iam.invoices_service_sa_email
+  vendors_service_name                                  = module.vendors_service.name
 }
 
 module "vendors_management_app" {

@@ -1,5 +1,9 @@
 import express from 'express';
 import * as lb from '@google-cloud/logging-bunyan';
+import {DocumentProcessorServiceClient} from '@google-cloud/documentai';
+import {Storage} from '@google-cloud/storage';
+import {AddressValidationClient} from '@googlemaps/addressvalidation';
+import expressFileUpload from 'express-fileupload';
 import {connect} from './db';
 import {HealthCheckRouter} from './health-check';
 import {InvoicesService, InvoicesRouter} from './invoices';
@@ -12,12 +16,45 @@ async function createApp() {
 
   await db.migrate.latest();
 
+  const documentProcessorServiceClient = new DocumentProcessorServiceClient({
+    projectId: config.google.project.id,
+  });
+
+  const storage = new Storage({
+    projectId: config.google.project.id,
+  });
+
+  const addressValidationClient = new AddressValidationClient({
+    projectId: config.google.project.id,
+  });
+
   const vendorsClient = new VendorsClient({
     baseUrl: config.vendorsService.baseUrl,
   });
 
   const invoicesService = new InvoicesService({
     db,
+    google: {
+      addressValidation: {
+        client: addressValidationClient,
+      },
+      documentAi: {
+        documentProcessorServiceClient,
+        processors: {
+          invoiceParser: {
+            id: config.google.documentAi.processors.invoiceParser.id,
+          },
+        },
+      },
+      storage: {
+        client: storage,
+        buckets: {
+          invoices: {
+            documents: config.google.storage.buckets.invoices.documents,
+          },
+        },
+      },
+    },
     vendors: {
       client: vendorsClient,
     },
@@ -41,6 +78,8 @@ async function createApp() {
   app.use(mw);
 
   app.use(express.json());
+
+  app.use(expressFileUpload());
 
   app.use('/healthz', healthCheckRouter);
 

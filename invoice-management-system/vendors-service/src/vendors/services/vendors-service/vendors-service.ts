@@ -14,6 +14,7 @@ interface VendorsServiceOptions {
 }
 
 interface ListVendorsOptions {
+  name?: string;
   orderBy?: {
     field: 'name';
     direction: 'asc' | 'desc';
@@ -73,6 +74,10 @@ class VendorsService {
     return await this.options
       .db<Vendor>(this.vendorsTable)
       .modify(queryBuilder => {
+        if (options?.name) {
+          queryBuilder.where({name: options.name});
+        }
+
         if (options?.orderBy) {
           queryBuilder.orderBy(
             options.orderBy.map(ordering => {

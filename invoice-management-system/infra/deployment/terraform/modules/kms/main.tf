@@ -16,3 +16,18 @@ resource "google_kms_crypto_key" "default_confidential" {
     prevent_destroy = true
   }
 }
+
+resource "google_kms_key_ring" "documentai" {
+  name     = "documentai-us-central1-keyring"
+  location = "us-central1"
+}
+
+resource "google_kms_crypto_key" "documentai_confidential" {
+  name            = "confidential-key"
+  key_ring        = google_kms_key_ring.documentai.id
+  rotation_period = local.rotation_period
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
