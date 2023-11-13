@@ -3,10 +3,9 @@ import {NodeEnv} from '../common/enums';
 
 const envVarsSchema = Joi.object()
   .keys({
-    GOOGLE_CLOUD_DOCUMENT_AI_INVOICE_PARSER_PROCESSOR_ID:
-      Joi.string().required(),
-    GOOGLE_CLOUD_PROJECT_ID: Joi.string().required(),
-    GOOGLE_CLOUD_STORAGE_BUCKET_INVOICE_DOCUMENTS: Joi.string().required(),
+    GOOGLE_DOCUMENT_AI_INVOICE_PARSER_PROCESSOR_ID: Joi.string().required(),
+    GOOGLE_PROJECT_ID: Joi.string().required(),
+    GOOGLE_STORAGE_BUCKET_INVOICE_DOCUMENTS: Joi.string().required(),
     LOG_LEVEL: Joi.string().valid('debug', 'info').required(),
     NODE_ENV: Joi.string()
       .valid(NodeEnv.Development, NodeEnv.Test, NodeEnv.Production)
@@ -34,17 +33,17 @@ const config = {
     documentAi: {
       processors: {
         invoiceParser: {
-          id: envVars.GOOGLE_CLOUD_DOCUMENT_AI_INVOICE_PARSER_PROCESSOR_ID,
+          id: envVars.GOOGLE_DOCUMENT_AI_INVOICE_PARSER_PROCESSOR_ID,
         },
       },
     },
     project: {
-      id: envVars.GOOGLE_CLOUD_PROJECT_ID,
+      id: envVars.GOOGLE_PROJECT_ID,
     },
     storage: {
       buckets: {
         invoices: {
-          documents: envVars.GOOGLE_CLOUD_STORAGE_BUCKET_INVOICE_DOCUMENTS,
+          documents: envVars.GOOGLE_STORAGE_BUCKET_INVOICE_DOCUMENTS,
         },
       },
     },

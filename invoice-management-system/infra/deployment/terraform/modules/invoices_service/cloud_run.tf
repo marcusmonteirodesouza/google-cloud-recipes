@@ -1,17 +1,17 @@
-resource "google_artifact_registry_repository_iam_member" "invoices_service_sa_invoices_service_repository" {
+resource "google_artifact_registry_repository_iam_member" "invoices_service_repository_invoices_service_sa" {
   location   = google_artifact_registry_repository.invoices_service.location
   repository = google_artifact_registry_repository.invoices_service.name
   role       = "roles/artifactregistry.reader"
   member     = "serviceAccount:${var.invoices_service_sa_email}"
 }
 
-resource "google_secret_manager_secret_iam_member" "invoices_service_sa_invoices_service_user_password" {
+resource "google_secret_manager_secret_iam_member" "invoices_service_user_password_invoices_service_sa" {
   secret_id = google_secret_manager_secret.invoices_service_user_password.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${var.invoices_service_sa_email}"
 }
 
-resource "google_storage_bucket_iam_member" "invoices_service_sa_invoice_documents" {
+resource "google_storage_bucket_iam_member" "invoice_documents_invoices_service_sa" {
   bucket = google_storage_bucket.invoice_documents.name
   role   = "roles/storage.objectUser"
   member = "serviceAccount:${var.invoices_service_sa_email}"
@@ -46,15 +46,15 @@ resource "google_cloud_run_v2_service" "invoices_service" {
       }
 
       env {
-        name  = "GOOGLE_CLOUD_DOCUMENT_AI_INVOICE_PARSER_PROCESSOR_ID"
+        name  = "GOOGLE_DOCUMENT_AI_INVOICE_PARSER_PROCESSOR_ID"
         value = google_document_ai_processor.invoice_parser.id
       }
       env {
-        name  = "GOOGLE_CLOUD_PROJECT_ID"
+        name  = "GOOGLE_PROJECT_ID"
         value = data.google_project.project.project_id
       }
       env {
-        name  = "GOOGLE_CLOUD_STORAGE_BUCKET_INVOICE_DOCUMENTS"
+        name  = "GOOGLE_STORAGE_BUCKET_INVOICE_DOCUMENTS"
         value = google_storage_bucket.invoice_documents.name
       }
       env {
@@ -111,9 +111,9 @@ resource "google_cloud_run_v2_service" "invoices_service" {
   }
 
   depends_on = [
-    google_artifact_registry_repository_iam_member.invoices_service_sa_invoices_service_repository,
-    google_secret_manager_secret_iam_member.invoices_service_sa_invoices_service_user_password,
-    google_storage_bucket_iam_member.invoices_service_sa_invoice_documents
+    google_artifact_registry_repository_iam_member.invoices_service_repository_invoices_service_sa,
+    google_secret_manager_secret_iam_member.invoices_service_user_password_invoices_service_sa,
+    google_storage_bucket_iam_member.invoice_documents_invoices_service_sa
   ]
 }
 

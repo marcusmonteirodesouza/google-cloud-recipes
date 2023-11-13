@@ -3,10 +3,10 @@ import {NodeEnv} from '../common/enums';
 
 const envVarsSchema = Joi.object()
   .keys({
-    GOOGLE_CLOUD_BACKEND_SERVICE_NAME: Joi.string().required(),
-    GOOGLE_CLOUD_PROJECT_ID: Joi.string().required(),
-    GOOGLE_CLOUD_PROJECT_NUMBER: Joi.string().required(),
-    GOOGLE_CLOUD_REGION: Joi.string().required(),
+    GOOGLE_BACKEND_SERVICE_NAME: Joi.string().required(),
+    GOOGLE_PROJECT_ID: Joi.string().required(),
+    GOOGLE_PROJECT_NUMBER: Joi.string().required(),
+    GOOGLE_REGION: Joi.string().required(),
     LOG_LEVEL: Joi.string().valid('debug', 'info').required(),
     NODE_ENV: Joi.string()
       .valid(NodeEnv.Development, NodeEnv.Test, NodeEnv.Production)
@@ -25,13 +25,13 @@ if (error) {
 const config = {
   google: {
     backendService: {
-      name: envVars.GOOGLE_CLOUD_BACKEND_SERVICE_NAME,
+      name: envVars.GOOGLE_BACKEND_SERVICE_NAME,
     },
     project: {
-      id: envVars.GOOGLE_CLOUD_PROJECT_ID,
-      number: envVars.GOOGLE_CLOUD_PROJECT_NUMBER,
+      id: envVars.GOOGLE_PROJECT_ID,
+      number: envVars.GOOGLE_PROJECT_NUMBER,
     },
-    region: envVars.GOOGLE_CLOUD_REGION,
+    region: envVars.GOOGLE_REGION,
   },
   logLevel: envVars.LOG_LEVEL,
   nodeEnv: envVars.NODE_ENV,

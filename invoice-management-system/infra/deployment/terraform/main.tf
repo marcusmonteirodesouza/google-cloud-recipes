@@ -76,9 +76,20 @@ module "vendors_management_app" {
   iap_sa_email                                          = module.iam.iap_sa_email
   vendors_management_app_sa_email                       = module.iam.vendors_management_app_sa_email
   vendors_management_app_users_group                    = var.vendors_management_app_users_group
-  vendors_management_app_support_email                  = var.vendors_management_app_support_email
   trust_vpc_access_connector_northamerica_northeast1_id = module.network.trust_vpc_access_connector_northamerica_northeast1_id
   vendors_service_name                                  = module.vendors_service.name
+}
+
+module "authorize_gmail_access_service" {
+  source = "./modules/authorize_gmail_access_service"
+
+  default_confidential_crypto_key_id                    = module.kms.default_confidential_crypto_key_id
+  trust_vpc_access_connector_northamerica_northeast1_id = module.network.trust_vpc_access_connector_northamerica_northeast1_id
+  oauth2_client_id                                      = var.oauth2_client_id
+  oauth2_client_secret_secret_id                        = google_secret_manager_secret.oauth2_client_secret.secret_id
+  authorize_gmail_access_service_sa_email               = module.iam.authorize_gmail_access_service_sa_email
+  authorize_gmail_access_service_domain                 = var.authorize_gmail_access_service_domain
+  authorize_gmail_access_service_gmail_address          = var.authorize_gmail_access_service_gmail_address
 }
 
 resource "google_compute_address" "load_balancer" {
@@ -93,10 +104,11 @@ module "load_balancer" {
   trust_network_name                            = module.network.trust_network_name
   vendors_management_app_cloud_run_service_name = module.vendors_management_app.name
   vendors_management_app_backend_service_name   = module.vendors_management_app.backend_service_name
-  vendors_management_app_iap_client_id          = module.vendors_management_app.iap_client_id
-  vendors_management_app_iap_client_secret      = module.vendors_management_app.iap_client_secret
+  oauth2_client_id                              = var.oauth2_client_id
+  oauth2_client_secret                          = var.oauth2_client_secret
   vendors_management_app_sa_email               = module.iam.vendors_management_app_sa_email
   vendors_management_app_users_group            = var.vendors_management_app_users_group
+  vendors_management_app_domain                 = var.vendors_management_app_domain
   ssl_certificate                               = var.ssl_certificate
   ssl_certificate_private_key                   = var.ssl_certificate_private_key
   google_compute_address_id                     = google_compute_address.load_balancer.id

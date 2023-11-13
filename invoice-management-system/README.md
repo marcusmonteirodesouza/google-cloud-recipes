@@ -35,7 +35,7 @@
 1. `cd` into the [`terraform` folder](./infra/deployment/terraform/)
 1. Run `cp terraform.tfvars.template terraform.tfvars` and fill out the variables with your own values.
 1. Create the following [Google groups](https://cloud.google.com/iam/docs/groups-in-cloud-console) to fill out the values of the following variables:
-    * `vendors_management_app_users_group`
+   - `vendors_management_app_users_group`
 1. Comment out the contents of the `backend.tf` file.
 1. Run `terraform init`.
 1. Run `terraform apply -target=module.enable_apis`.

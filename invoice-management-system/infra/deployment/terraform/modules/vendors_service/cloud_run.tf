@@ -1,11 +1,11 @@
-resource "google_artifact_registry_repository_iam_member" "vendors_service_sa_vendors_service_repository" {
+resource "google_artifact_registry_repository_iam_member" "vendors_service_repository_vendors_service_sa" {
   location   = google_artifact_registry_repository.vendors_service.location
   repository = google_artifact_registry_repository.vendors_service.name
   role       = "roles/artifactregistry.reader"
   member     = "serviceAccount:${var.vendors_service_sa_email}"
 }
 
-resource "google_secret_manager_secret_iam_member" "vendors_service_sa_vendors_service_user_password" {
+resource "google_secret_manager_secret_iam_member" "vendors_service_user_password_vendors_service_sa" {
   secret_id = google_secret_manager_secret.vendors_service_user_password.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${var.vendors_service_sa_email}"
@@ -89,8 +89,8 @@ resource "google_cloud_run_v2_service" "vendors_service" {
   }
 
   depends_on = [
-    google_artifact_registry_repository_iam_member.vendors_service_sa_vendors_service_repository,
-    google_secret_manager_secret_iam_member.vendors_service_sa_vendors_service_user_password
+    google_artifact_registry_repository_iam_member.vendors_service_repository_vendors_service_sa,
+    google_secret_manager_secret_iam_member.vendors_service_user_password_vendors_service_sa
   ]
 }
 

@@ -18,11 +18,6 @@ variable "vendors_management_app_users_group" {
   description = "Vendors Management App Users Google group."
 }
 
-variable "vendors_management_app_support_email" {
-  type        = string
-  description = "Vendors Management App support email."
-}
-
 variable "trust_vpc_access_connector_northamerica_northeast1_id" {
   type        = string
   description = "Trust northamerica-northeast1 VPC Access Connector ID."

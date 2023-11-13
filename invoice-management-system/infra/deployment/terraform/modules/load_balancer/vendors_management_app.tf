@@ -19,8 +19,8 @@ resource "google_compute_region_backend_service" "vendors_management_app_service
   }
 
   iap {
-    oauth2_client_id     = var.vendors_management_app_iap_client_id
-    oauth2_client_secret = var.vendors_management_app_iap_client_secret
+    oauth2_client_id     = var.oauth2_client_id
+    oauth2_client_secret = var.oauth2_client_secret
   }
 }
 

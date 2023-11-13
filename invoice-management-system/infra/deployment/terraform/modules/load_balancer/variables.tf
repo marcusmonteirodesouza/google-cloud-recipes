@@ -28,15 +28,20 @@ variable "vendors_management_app_users_group" {
   description = "Vendors Management App Users Google group."
 }
 
-variable "vendors_management_app_iap_client_id" {
+variable "oauth2_client_id" {
   type        = string
   description = "Unique identifier of the Vendors Management App OAuth client."
 }
 
-variable "vendors_management_app_iap_client_secret" {
+variable "oauth2_client_secret" {
   type        = string
   description = "Client secret of the Vendors Management App OAuth client."
   sensitive   = true
+}
+
+variable "vendors_management_app_domain" {
+  type        = string
+  description = "Vendor Management App domain."
 }
 
 variable "ssl_certificate" {

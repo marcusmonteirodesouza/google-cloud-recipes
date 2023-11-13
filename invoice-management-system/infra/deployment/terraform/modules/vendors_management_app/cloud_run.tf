@@ -3,7 +3,7 @@ locals {
   backend_service_name = "${local.service_name}-backend"
 }
 
-resource "google_artifact_registry_repository_iam_member" "vendors_management_app_sa_vendors_management_app_repository" {
+resource "google_artifact_registry_repository_iam_member" "vendors_management_app_repository_vendors_management_app_sa" {
   location   = google_artifact_registry_repository.vendors_management_app.location
   repository = google_artifact_registry_repository.vendors_management_app.name
   role       = "roles/artifactregistry.reader"
@@ -39,19 +39,19 @@ resource "google_cloud_run_v2_service" "vendors_management_app" {
       }
 
       env {
-        name  = "GOOGLE_CLOUD_BACKEND_SERVICE_NAME"
+        name  = "GOOGLE_BACKEND_SERVICE_NAME"
         value = local.backend_service_name
       }
       env {
-        name  = "GOOGLE_CLOUD_REGION"
+        name  = "GOOGLE_REGION"
         value = "northamerica-northeast1"
       }
       env {
-        name  = "GOOGLE_CLOUD_PROJECT_ID"
+        name  = "GOOGLE_PROJECT_ID"
         value = data.google_project.project.project_id
       }
       env {
-        name  = "GOOGLE_CLOUD_PROJECT_NUMBER"
+        name  = "GOOGLE_PROJECT_NUMBER"
         value = data.google_project.project.number
       }
       env {
@@ -75,7 +75,7 @@ resource "google_cloud_run_v2_service" "vendors_management_app" {
   }
 
   depends_on = [
-    google_artifact_registry_repository_iam_member.vendors_management_app_sa_vendors_management_app_repository,
+    google_artifact_registry_repository_iam_member.vendors_management_app_repository_vendors_management_app_sa,
   ]
 }
 
