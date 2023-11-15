@@ -32,3 +32,13 @@ variable "vendors_service_northamerica_northeast1_restricted_crypto_key_id" {
   type        = string
   description = "Vendors Service northamerica-northeast1 restricted KMS crypto key ID."
 }
+
+variable "process_invoice_emails_cloud_function_northamerica_northeast1_confidential_crypto_key_id" {
+  type        = string
+  description = "Process Invoice Emails Cloud Function northamerica-northeast1 confidential KMS crypto key ID."
+}
+
+variable "process_invoice_emails_cloud_function_northamerica_northeast1_restricted_crypto_key_id" {
+  type        = string
+  description = "Process Invoice Emails Cloud Function northamerica-northeast1 restricted KMS crypto key ID."
+}

@@ -38,13 +38,15 @@ module "kms" {
 module "iam" {
   source = "./modules/iam"
 
-  bootstrap_northamerica_northeast1_confidential_crypto_key_id              = module.kms.bootstrap_northamerica_northeast1_confidential_crypto_key_id
-  invoices_service_northamerica_northeast1_confidential_crypto_key_id       = module.kms.invoices_service_northamerica_northeast1_confidential_crypto_key_id
-  invoices_service_northamerica_northeast1_restricted_crypto_key_id         = module.kms.invoices_service_northamerica_northeast1_restricted_crypto_key_id
-  invoices_service_us_central1_restricted_crypto_key_id                     = module.kms.invoices_service_us_central1_restricted_crypto_key_id
-  vendors_management_app_northamerica_northeast1_confidential_crypto_key_id = module.kms.vendors_management_app_northamerica_northeast1_confidential_crypto_key_id
-  vendors_service_northamerica_northeast1_confidential_crypto_key_id        = module.kms.vendors_service_northamerica_northeast1_confidential_crypto_key_id
-  vendors_service_northamerica_northeast1_restricted_crypto_key_id          = module.kms.invoices_service_northamerica_northeast1_restricted_crypto_key_id
+  bootstrap_northamerica_northeast1_confidential_crypto_key_id                             = module.kms.bootstrap_northamerica_northeast1_confidential_crypto_key_id
+  invoices_service_northamerica_northeast1_confidential_crypto_key_id                      = module.kms.invoices_service_northamerica_northeast1_confidential_crypto_key_id
+  invoices_service_northamerica_northeast1_restricted_crypto_key_id                        = module.kms.invoices_service_northamerica_northeast1_restricted_crypto_key_id
+  invoices_service_us_central1_restricted_crypto_key_id                                    = module.kms.invoices_service_us_central1_restricted_crypto_key_id
+  vendors_management_app_northamerica_northeast1_confidential_crypto_key_id                = module.kms.vendors_management_app_northamerica_northeast1_confidential_crypto_key_id
+  vendors_service_northamerica_northeast1_confidential_crypto_key_id                       = module.kms.vendors_service_northamerica_northeast1_confidential_crypto_key_id
+  vendors_service_northamerica_northeast1_restricted_crypto_key_id                         = module.kms.invoices_service_northamerica_northeast1_restricted_crypto_key_id
+  process_invoice_emails_cloud_function_northamerica_northeast1_confidential_crypto_key_id = module.kms.process_invoice_emails_cloud_function_northamerica_northeast1_confidential_crypto_key_id
+  process_invoice_emails_cloud_function_northamerica_northeast1_restricted_crypto_key_id   = module.kms.process_invoice_emails_cloud_function_northamerica_northeast1_restricted_crypto_key_id
 }
 
 module "network" {
@@ -85,6 +87,19 @@ module "vendors_management_app" {
   vendors_management_app_users_group                                        = var.vendors_management_app_users_group
   vendors_management_app_northamerica_northeast1_confidential_crypto_key_id = module.kms.vendors_management_app_northamerica_northeast1_confidential_crypto_key_id
   vendors_service_name                                                      = module.vendors_service.name
+}
+
+module "process_invoice_emails_cloud_function" {
+  source = "./modules/process_invoice_emails_cloud_function"
+
+  trust_vpc_access_connector_northamerica_northeast1_id                                    = module.network.trust_vpc_access_connector_northamerica_northeast1_id
+  process_invoice_emails_cloud_function_northamerica_northeast1_confidential_crypto_key_id = module.kms.process_invoice_emails_cloud_function_northamerica_northeast1_confidential_crypto_key_id
+  process_invoice_emails_cloud_function_northamerica_northeast1_restricted_crypto_key_id   = module.kms.process_invoice_emails_cloud_function_northamerica_northeast1_restricted_crypto_key_id
+  process_invoice_emails_cloud_function_sa_email                                           = module.iam.process_invoice_emails_cloud_function_sa_email
+  gmail_address                                                                            = var.process_invoice_emails_gmail_address
+  gmail_app_password                                                                       = var.process_invoice_emails_gmail_app_password
+  invoices_service_name                                                                    = module.invoices_service.name
+  vendors_service_name                                                                     = module.vendors_service.name
 }
 
 resource "google_compute_address" "load_balancer" {

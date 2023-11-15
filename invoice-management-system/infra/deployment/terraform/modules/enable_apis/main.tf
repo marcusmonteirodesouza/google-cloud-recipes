@@ -7,6 +7,7 @@ locals {
     "cloudfunctions.googleapis.com",
     "cloudkms.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "cloudscheduler.googleapis.com",
     "compute.googleapis.com",
     "containeranalysis.googleapis.com",
     "documentai.googleapis.com",

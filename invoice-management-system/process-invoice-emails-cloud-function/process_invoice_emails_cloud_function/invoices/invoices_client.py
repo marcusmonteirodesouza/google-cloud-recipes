@@ -14,7 +14,9 @@ class InvoicesClient:
 
     def create_invoice(self, vendor_id: str) -> Union[Invoice, ErrorResponse]:
         create_invoice_response = requests.post(
-            self._invoices_service_base_url, json={"vendorId": vendor_id}
+            self._invoices_service_base_url,
+            json={"vendorId": vendor_id},
+            headers={"Accept": "application/json"},
         )
 
         create_invoice_response_json = create_invoice_response.json()
@@ -39,6 +41,7 @@ class InvoicesClient:
                 upload_invoice_response = requests.post(
                     f"{self._invoices_service_base_url}/{invoice_id}/upload",
                     files={"file": ("invoice.pdf", f, "application/pdf")},
+                    headers={"Accept": "application/json"},
                 )
 
         upload_invoice_response_json = upload_invoice_response.json()

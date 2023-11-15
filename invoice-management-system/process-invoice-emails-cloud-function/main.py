@@ -1,5 +1,5 @@
 import functions_framework
-from .process_invoice_emails_cloud_function import main
+from process_invoice_emails_cloud_function import main
 
 
 @functions_framework.cloud_event

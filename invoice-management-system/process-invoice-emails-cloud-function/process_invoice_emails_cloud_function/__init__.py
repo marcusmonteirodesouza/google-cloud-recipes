@@ -31,9 +31,9 @@ def main():
             retr_inbox_message_raw = b"\n".join(retr_inbox_message[1])
             retr_inbox_message_parsed = email.message_from_bytes(retr_inbox_message_raw)
 
-            vendor_email = re.search(
-                "<(.+?)>", retr_inbox_message_parsed["From"]
-            ).group(1)
+            vendor_email = (
+                re.search("<(.+?)>", retr_inbox_message_parsed["From"]).group(1).strip()
+            )
 
             logging.info(f"Processing message from vendor {vendor_email}")
 

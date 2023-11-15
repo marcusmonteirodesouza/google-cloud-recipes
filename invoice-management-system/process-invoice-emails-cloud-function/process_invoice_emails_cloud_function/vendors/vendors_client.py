@@ -16,7 +16,9 @@ class VendorsClient:
             params["email"] = email
 
         list_vendors_response = requests.get(
-            self._vendors_service_base_url, params=params
+            self._vendors_service_base_url,
+            params=params,
+            headers={"Accept": "application/json"},
         )
 
         list_vendors_response_json = list_vendors_response.json()

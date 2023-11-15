@@ -25,3 +25,11 @@ output "vendors_service_northamerica_northeast1_confidential_crypto_key_id" {
 output "vendors_service_northamerica_northeast1_restricted_crypto_key_id" {
   value = google_kms_crypto_key.vendors_service_northamerica_northeast1_restricted.id
 }
+
+output "process_invoice_emails_cloud_function_northamerica_northeast1_confidential_crypto_key_id" {
+  value = google_kms_crypto_key.process_invoice_emails_cloud_function_northamerica_northeast1_confidential.id
+}
+
+output "process_invoice_emails_cloud_function_northamerica_northeast1_restricted_crypto_key_id" {
+  value = google_kms_crypto_key.process_invoice_emails_cloud_function_northamerica_northeast1_restricted.id
+}

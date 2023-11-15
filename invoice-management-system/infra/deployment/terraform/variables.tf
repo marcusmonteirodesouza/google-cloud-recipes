@@ -38,14 +38,15 @@ variable "vendors_management_app_domain" {
   description = "Vendor Management App domain."
 }
 
-variable "authorize_gmail_access_service_domain" {
+variable "process_invoice_emails_gmail_address" {
   type        = string
-  description = "Authorize Gmail Access Service domain."
+  description = "Gmail address to process Invoice messages from."
 }
 
-variable "authorize_gmail_access_service_gmail_address" {
+variable "process_invoice_emails_gmail_app_password" {
   type        = string
-  description = "Gmail address whose inbox will be watched for invoices."
+  description = "Gmail App password used to download Invoice messages."
+  sensitive   = true
 }
 
 variable "ssl_certificate" {
