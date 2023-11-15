@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "process-invoice-emails"
+version = "0.1.0"
+description = "Google Cloud Demos - Invoice Management System - Process Invoice Emails"
+authors = ["Marcus Vinicius Monteiro de Souza <mvsouza007@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.31.0"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.11.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
