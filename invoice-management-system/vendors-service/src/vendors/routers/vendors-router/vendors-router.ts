@@ -106,7 +106,7 @@ class VendorsRouter {
             await this.options.vendorsService.getVendorById(vendorId);
 
           if (!vendor) {
-            throw new Error(`Vendor ${vendorId} not found`)
+            throw new Error(`Vendor ${vendorId} not found`);
           }
 
           return res.json(vendor);

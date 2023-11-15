@@ -1,3 +1,4 @@
+import datetime
 import requests
 from typing import Union
 from .vendor import Vendor
@@ -34,8 +35,8 @@ class VendorsClient:
                     _id=vendor["id"],
                     name=vendor["name"],
                     email=vendor["email"],
-                    created_at=vendor["createdAt"],
-                    updated_at=vendor["updatedAt"],
+                    created_at=datetime.datetime.fromisoformat(vendor["createdAt"]),
+                    updated_at=datetime.datetime.fromisoformat(vendor["updatedAt"]),
                 )
             )
 

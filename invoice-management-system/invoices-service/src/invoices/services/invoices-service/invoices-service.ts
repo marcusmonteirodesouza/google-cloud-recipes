@@ -106,11 +106,20 @@ class InvoicesService {
     invoiceId: string,
     options: UploadInvoiceDocumentOptions
   ): Promise<Invoice> {
+    const validMimeTypes = ['application/pdf'];
+
+    if (!validMimeTypes.includes(options.document.mimeType)) {
+      throw new RangeError(
+        `Invalid mimeType ${options.document.mimeType}. Expected one of ${validMimeTypes}`
+      );
+    }
+
     const invoice = await this.getInvoiceById(invoiceId);
 
     if (!invoice) {
       throw new NotFoundError(`Invoice ${invoiceId} not found`);
     }
+
     const [invoiceParserProcessDocumentResponse] =
       await this.options.google.documentAi.documentProcessorServiceClient.processDocument(
         {

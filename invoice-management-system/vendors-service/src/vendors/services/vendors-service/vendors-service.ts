@@ -76,7 +76,7 @@ class VendorsService {
         }
 
         if (options?.email) {
-          queryBuilder.where({email: options.email})
+          queryBuilder.where({email: options.email});
         }
 
         if (options?.orderBy) {
