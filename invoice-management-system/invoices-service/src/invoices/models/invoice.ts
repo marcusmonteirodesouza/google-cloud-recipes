@@ -4,12 +4,14 @@ interface Invoice {
   readonly id: string;
   readonly vendorId: string;
   readonly status: InvoiceStatus;
-  readonly date: Date;
-  readonly dueDate: Date;
-  readonly netAmount: number;
-  readonly totalTaxAmount: number;
-  readonly totalAmount: number;
-  readonly currency: string;
+  readonly date?: Date;
+  readonly dueDate?: Date;
+  readonly netAmount?: number;
+  readonly totalTaxAmount?: number;
+  readonly totalAmount?: number;
+  readonly currency?: string;
+  readonly vendorAddress?: string;
+  readonly vendorGooglePlaceId?: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }

@@ -1,6 +1,5 @@
 import express from 'express';
 import * as lb from '@google-cloud/logging-bunyan';
-import {AddressValidationClient} from '@googlemaps/addressvalidation';
 import {connect} from './db';
 import {HealthCheckRouter} from './health-check';
 import {VendorsService, VendorsRouter} from './vendors';
@@ -12,15 +11,8 @@ async function createApp() {
 
   await db.migrate.latest();
 
-  const addressvalidationClient = new AddressValidationClient();
-
   const vendorsService = new VendorsService({
     db,
-    google: {
-      addressValidation: {
-        client: addressvalidationClient,
-      },
-    },
   });
 
   const healthCheckRouter = new HealthCheckRouter({db}).router;

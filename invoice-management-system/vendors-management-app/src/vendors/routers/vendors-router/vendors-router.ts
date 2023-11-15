@@ -45,10 +45,10 @@ class VendorsRouter {
 
     router.post('/add', async (req, res, next) => {
       try {
-        const {name, address} = req.body;
+        const {name, email} = req.body;
 
         try {
-          await this.options.vendorsClient.createVendor(name, address);
+          await this.options.vendorsClient.createVendor({name, email});
         } catch (err) {
           if (err instanceof ErrorResponse) {
             return res.render('vendors/add', {

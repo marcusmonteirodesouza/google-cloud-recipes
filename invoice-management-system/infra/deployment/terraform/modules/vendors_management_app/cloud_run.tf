@@ -3,13 +3,6 @@ locals {
   backend_service_name = "${local.service_name}-backend"
 }
 
-resource "google_artifact_registry_repository_iam_member" "vendors_management_app_repository_vendors_management_app_sa" {
-  location   = google_artifact_registry_repository.vendors_management_app.location
-  repository = google_artifact_registry_repository.vendors_management_app.name
-  role       = "roles/artifactregistry.reader"
-  member     = "serviceAccount:${var.vendors_management_app_sa_email}"
-}
-
 resource "google_cloud_run_v2_service" "vendors_management_app" {
   name     = local.service_name
   location = "northamerica-northeast1"
@@ -17,7 +10,7 @@ resource "google_cloud_run_v2_service" "vendors_management_app" {
 
   template {
     service_account = var.vendors_management_app_sa_email
-    encryption_key  = var.default_confidential_crypto_key_id
+    encryption_key  = var.vendors_management_app_northamerica_northeast1_confidential_crypto_key_id
 
     scaling {
       max_instance_count = 3

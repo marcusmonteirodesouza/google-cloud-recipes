@@ -14,7 +14,7 @@
     "lint": "gts lint",
     "clean": "gts clean",
     "compile": "tsc && cp -R ./src/public ./build/src/ && cp -R src/views build/src/",
-    "fix": "gts fix",
+    "fix": "npx prettier --write . && gts fix",
     "dev": "ts-node-dev -r dotenv/config src/index.ts",
     "start": "node -r dotenv/config build/src/index.js",
     "prepare": "npm run compile",

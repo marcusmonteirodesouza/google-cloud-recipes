@@ -5,26 +5,6 @@ locals {
 resource "google_compute_region_url_map" "default" {
   name            = "${local.lb_name}-lb-urlmap"
   default_service = google_compute_region_backend_service.vendors_management_app_service.id
-
-  host_rule {
-    hosts        = [var.vendors_management_app_domain]
-    path_matcher = "vendors-management-app"
-  }
-
-  path_matcher {
-    name            = "vendors-management-app"
-    default_service = google_compute_region_backend_service.vendors_management_app_service.id
-  }
-
-  # host_rule {
-  #   hosts        = [var.authorize_gmail_access_cloud_function_domain]
-  #   path_matcher = "authorize-gmail-access-cloud-function"
-  # }
-
-  # path_matcher {
-  #   name            = "authorize-gmail-access-cloud-function"
-  #   default_service = google_compute_region_backend_service.authorize_gmail_access_init_cloud_function_service.id
-  # }
 }
 
 resource "google_compute_region_ssl_certificate" "default" {

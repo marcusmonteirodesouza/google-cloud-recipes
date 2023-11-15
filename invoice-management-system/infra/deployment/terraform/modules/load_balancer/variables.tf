@@ -1,31 +1,21 @@
-variable "default_confidential_crypto_key_id" {
-  type        = string
-  description = "Default confidential KMS crypto key ID."
-}
-
 variable "trust_network_name" {
   type        = string
   description = "Trust VPC network name."
 }
 
-variable "vendors_management_app_backend_service_name" {
+variable "google_compute_address_id" {
   type        = string
-  description = "Cloud Load Balancing Vendors Management App Backend Service name."
+  description = "Regional HTTP Load Balancer IP address ID."
 }
 
-variable "vendors_management_app_cloud_run_service_name" {
+variable "ssl_certificate" {
   type        = string
-  description = "Vendors Management App Cloud Run service name."
+  description = "SSL certificate in PEM format."
 }
 
-variable "vendors_management_app_sa_email" {
+variable "ssl_certificate_private_key" {
   type        = string
-  description = "Vendors Management App Service Account email."
-}
-
-variable "vendors_management_app_users_group" {
-  type        = string
-  description = "Vendors Management App Users Google group."
+  description = "SSL certificate write-only private key in PEM format."
 }
 
 variable "oauth2_client_id" {
@@ -39,22 +29,27 @@ variable "oauth2_client_secret" {
   sensitive   = true
 }
 
+variable "vendors_management_app_sa_email" {
+  type        = string
+  description = "Vendors Management App Service Account email."
+}
+
+variable "vendors_management_app_users_group" {
+  type        = string
+  description = "Vendors Management App Users Google group."
+}
+
 variable "vendors_management_app_domain" {
   type        = string
   description = "Vendor Management App domain."
 }
 
-variable "ssl_certificate" {
+variable "vendors_management_app_backend_service_name" {
   type        = string
-  description = "SSL certificate in PEM format."
+  description = "Cloud Load Balancing Vendors Management App Backend Service name."
 }
 
-variable "ssl_certificate_private_key" {
+variable "vendors_management_app_cloud_run_service_name" {
   type        = string
-  description = "SSL certificate write-only private key in PEM format."
-}
-
-variable "google_compute_address_id" {
-  type        = string
-  description = "Regional HTTP Load Balancer IP address ID."
+  description = "Vendors Management App Cloud Run service name."
 }

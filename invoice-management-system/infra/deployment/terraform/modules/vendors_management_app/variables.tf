@@ -1,6 +1,6 @@
-variable "default_confidential_crypto_key_id" {
+variable "trust_vpc_access_connector_northamerica_northeast1_id" {
   type        = string
-  description = "Default confidential KMS crypto key ID."
+  description = "Trust northamerica-northeast1 VPC Access Connector ID."
 }
 
 variable "iap_sa_email" {
@@ -18,9 +18,9 @@ variable "vendors_management_app_users_group" {
   description = "Vendors Management App Users Google group."
 }
 
-variable "trust_vpc_access_connector_northamerica_northeast1_id" {
+variable "vendors_management_app_northamerica_northeast1_confidential_crypto_key_id" {
   type        = string
-  description = "Trust northamerica-northeast1 VPC Access Connector ID."
+  description = "Vendors Management App northamerica-northeast1 confidential KMS crypto key ID."
 }
 
 variable "vendors_service_name" {

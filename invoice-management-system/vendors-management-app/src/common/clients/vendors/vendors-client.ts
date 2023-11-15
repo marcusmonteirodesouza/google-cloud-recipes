@@ -1,8 +1,17 @@
 import axios from 'axios';
 import {Vendor} from './models';
 
-interface VendorsOptions {
+interface VendorsClientOptions {
   baseUrl: string;
+}
+
+interface CreateVendorOptions {
+  name: string;
+  email: string;
+}
+
+interface ListVendorsOptions {
+  orderBy?: OrderByClause[];
 }
 
 interface OrderByClause {
@@ -10,17 +19,13 @@ interface OrderByClause {
   direction: 'asc' | 'desc';
 }
 
-interface ListVendorsOptions {
-  orderBy?: OrderByClause[];
-}
-
 class VendorsClient {
-  constructor(private readonly options: VendorsOptions) {}
+  constructor(private readonly options: VendorsClientOptions) {}
 
-  async createVendor(name: string, address: string): Promise<Vendor> {
+  async createVendor(options: CreateVendorOptions): Promise<Vendor> {
     const {data: vendor} = await axios.post(this.options.baseUrl, {
-      name,
-      address,
+      name: options.name,
+      email: options.email,
     });
 
     return vendor;

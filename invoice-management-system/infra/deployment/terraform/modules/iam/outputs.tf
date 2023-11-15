@@ -13,7 +13,3 @@ output "vendors_service_sa_email" {
 output "vendors_management_app_sa_email" {
   value = google_service_account.vendors_management_app.email
 }
-
-output "authorize_gmail_access_service_sa_email" {
-  value = google_service_account.authorize_gmail_access_service.email
-}

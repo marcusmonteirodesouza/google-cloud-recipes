@@ -18,17 +18,17 @@ class VendorsRouter {
       celebrate({
         [Segments.BODY]: Joi.object().keys({
           name: Joi.string().required(),
-          address: Joi.string().required(),
+          email: Joi.string().email().required(),
         }),
       }),
       async (req, res, next) => {
         try {
-          const {name, address} = req.body;
+          const {name, email} = req.body;
 
-          const vendor = await this.options.vendorsService.createVendor(
+          const vendor = await this.options.vendorsService.createVendor({
             name,
-            address
-          );
+            email,
+          });
 
           return res.status(StatusCodes.CREATED).json(vendor);
         } catch (err) {
@@ -102,6 +102,10 @@ class VendorsRouter {
 
           const vendor =
             await this.options.vendorsService.getVendorById(vendorId);
+
+          if (!vendor) {
+            throw new Error(`Vendor ${vendorId} not found`)
+          }
 
           return res.json(vendor);
         } catch (err) {

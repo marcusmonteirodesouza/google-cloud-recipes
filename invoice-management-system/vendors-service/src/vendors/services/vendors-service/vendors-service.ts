@@ -1,20 +1,21 @@
 import {Knex} from 'knex';
 import {DatabaseError} from 'pg';
-import {AddressValidationClient} from '@googlemaps/addressvalidation';
+import {Joi} from 'celebrate';
 import {Vendor} from '../../models';
 import {AlreadyExistsError} from '../../../errors';
 
 interface VendorsServiceOptions {
   db: Knex;
-  google: {
-    addressValidation: {
-      client: AddressValidationClient;
-    };
-  };
+}
+
+interface CreateVendorOptions {
+  name: string;
+  email: string;
 }
 
 interface ListVendorsOptions {
   name?: string;
+  email?: string;
   orderBy?: {
     field: 'name';
     direction: 'asc' | 'desc';
@@ -26,25 +27,17 @@ class VendorsService {
 
   constructor(private readonly options: VendorsServiceOptions) {}
 
-  async createVendor(name: string, address: string): Promise<Vendor> {
-    const [validateAddressResponse] =
-      await this.options.google.addressValidation.client.validateAddress({
-        address: {
-          addressLines: [address],
-        },
-      });
-
-    if (!validateAddressResponse.result?.geocode?.placeId) {
-      throw new RangeError('Invalid address');
+  async createVendor(options: CreateVendorOptions): Promise<Vendor> {
+    if (!this.isValidEmail(options.email)) {
+      throw new RangeError(`Invalid email ${options.email}`);
     }
 
     try {
       const [vendor] = await this.options
         .db<Vendor>(this.vendorsTable)
         .insert({
-          name,
-          address,
-          googlePlaceId: validateAddressResponse.result.geocode.placeId,
+          name: options.name,
+          email: options.email,
         })
         .returning('*');
 
@@ -55,6 +48,10 @@ class VendorsService {
           if (err.constraint === 'vendors_name_unique') {
             throw new AlreadyExistsError('Vendor already exists');
           }
+
+          if (err.constraint === 'vendors_email_unique') {
+            throw new AlreadyExistsError('Email already exists');
+          }
         }
       }
 
@@ -62,7 +59,7 @@ class VendorsService {
     }
   }
 
-  async getVendorById(vendorId: string): Promise<Vendor> {
+  async getVendorById(vendorId: string): Promise<Vendor | undefined> {
     const [vendor] = await this.options
       .db<Vendor>(this.vendorsTable)
       .where({id: vendorId});
@@ -76,6 +73,10 @@ class VendorsService {
       .modify(queryBuilder => {
         if (options?.name) {
           queryBuilder.where({name: options.name});
+        }
+
+        if (options?.email) {
+          queryBuilder.where({email: options.email})
         }
 
         if (options?.orderBy) {
@@ -93,6 +94,15 @@ class VendorsService {
 
   async deleteVendorById(vendorId: string): Promise<void> {
     await this.options.db(this.vendorsTable).where('id', vendorId).del();
+  }
+
+  private async isValidEmail(email: string) {
+    try {
+      await Joi.string().email().validateAsync(email);
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 }
 

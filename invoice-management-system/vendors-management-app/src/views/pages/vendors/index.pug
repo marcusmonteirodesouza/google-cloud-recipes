@@ -13,13 +13,13 @@ block content
       tr
         th
         th Name
-        th Address
+        th Email
     tbody
       each vendor in vendors
         tr
           td
             input(data-id=`${vendor.id}` data-name=`${vendor.name}` type="checkbox")
           td=vendor.name
-          td=vendor.address
+          td=vendor.email
 block scripts
   script(src='/js/vendors/index.js')

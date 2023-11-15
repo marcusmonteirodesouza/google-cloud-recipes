@@ -16,7 +16,7 @@ resource "google_sql_database_instance" "vendors_service" {
     }
   }
 
-  encryption_key_name = var.default_confidential_crypto_key_id
+  encryption_key_name = var.vendors_service_northamerica_northeast1_restricted_crypto_key_id
 
   timeouts {
     create = "60m"
@@ -54,7 +54,7 @@ resource "google_secret_manager_secret" "vendors_service_user_password" {
         location = "northamerica-northeast1"
 
         customer_managed_encryption {
-          kms_key_name = var.default_confidential_crypto_key_id
+          kms_key_name = var.vendors_service_northamerica_northeast1_restricted_crypto_key_id
         }
       }
     }
@@ -64,4 +64,10 @@ resource "google_secret_manager_secret" "vendors_service_user_password" {
 resource "google_secret_manager_secret_version" "vendors_service_user_password" {
   secret      = google_secret_manager_secret.vendors_service_user_password.id
   secret_data = google_sql_user.vendors_service.password
+}
+
+resource "google_secret_manager_secret_iam_member" "vendors_service_user_password_vendors_service_sa" {
+  secret_id = google_secret_manager_secret.vendors_service_user_password.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.vendors_service_sa_email}"
 }

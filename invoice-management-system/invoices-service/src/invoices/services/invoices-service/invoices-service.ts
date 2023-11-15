@@ -4,7 +4,7 @@ import {Storage} from '@google-cloud/storage';
 import {AddressValidationClient} from '@googlemaps/addressvalidation';
 import mimeTypes from 'mime-types';
 import {VendorsClient} from '../../../common/clients/vendors';
-import {Invoice, InvoiceDocument} from '../../models';
+import {Invoice, InvoiceDocument, InvoiceStatus} from '../../models';
 import {NotFoundError} from '../../../errors';
 
 interface InvoicesServiceOptions {
@@ -35,173 +35,225 @@ interface InvoicesServiceOptions {
   };
 }
 
+interface UpdateInvoiceOptions {
+  status?: InvoiceStatus;
+}
+
+interface UploadInvoiceDocumentOptions {
+  document: {
+    content: Buffer;
+    mimeType: string;
+  };
+}
+
 class InvoicesService {
   private readonly invoicesTable = 'invoices';
   private readonly invoiceDocumentsTable = 'invoice_documents';
 
   constructor(private readonly options: InvoicesServiceOptions) {}
 
-  async createInvoice(data: Buffer, mimeType: string): Promise<Invoice> {
+  async createInvoice(vendorId: string): Promise<Invoice> {
+    const vendor = await this.options.vendors.client.getVendorById(vendorId);
+
+    if (!vendor) {
+      throw new NotFoundError(`Vendor ${vendorId} not found`);
+    }
+
+    const [invoice] = await this.options
+      .db<Invoice>(this.invoicesTable)
+      .insert({vendorId: vendor.id, status: InvoiceStatus.Created})
+      .returning('*');
+
+    return invoice;
+  }
+
+  async getInvoiceById(invoiceId: string): Promise<Invoice | undefined> {
+    const [invoice] = await this.options
+      .db<Invoice>(this.invoicesTable)
+      .where({id: invoiceId});
+
+    return invoice;
+  }
+
+  async updateInvoice(
+    invoiceId: string,
+    options: UpdateInvoiceOptions
+  ): Promise<Invoice> {
+    const invoice = await this.getInvoiceById(invoiceId);
+
+    if (!invoice) {
+      throw new NotFoundError(`Invoice ${invoiceId} not found`);
+    }
+
+    const [updatedInvoice] = await this.options
+      .db<Invoice>(this.invoicesTable)
+      .where({id: invoice.id})
+      .modify(queryBuilder => {
+        if (options.status) {
+          queryBuilder.update({status: options.status});
+        }
+
+        if (options.status) {
+          queryBuilder.update({updatedAt: new Date()});
+        }
+      })
+      .returning('*');
+
+    return updatedInvoice;
+  }
+
+  async uploadInvoiceDocument(
+    invoiceId: string,
+    options: UploadInvoiceDocumentOptions
+  ): Promise<Invoice> {
+    const invoice = await this.getInvoiceById(invoiceId);
+
+    if (!invoice) {
+      throw new NotFoundError(`Invoice ${invoiceId} not found`);
+    }
     const [invoiceParserProcessDocumentResponse] =
       await this.options.google.documentAi.documentProcessorServiceClient.processDocument(
         {
           name: this.options.google.documentAi.processors.invoiceParser.id,
           rawDocument: {
-            content: data.toString('base64'),
-            mimeType,
+            content: options.document.content.toString('base64'),
+            mimeType: options.document.mimeType,
           },
         }
       );
-
-    const vendorName =
-      invoiceParserProcessDocumentResponse.document?.entities?.find(
-        entity => entity.type === 'supplier_name'
-      )?.mentionText;
-
-    if (!vendorName) {
-      throw new RangeError('Vendor name not found in invoice file');
-    }
-
-    const vendorAddress =
-      invoiceParserProcessDocumentResponse.document?.entities?.find(
-        entity => entity.type === 'supplier_address'
-      )?.mentionText;
-
-    if (!vendorAddress) {
-      throw new RangeError('Vendor address not found in invoice file');
-    }
 
     const invoiceDateValue =
       invoiceParserProcessDocumentResponse.document?.entities?.find(
         entity => entity.type === 'invoice_date'
       )?.normalizedValue?.dateValue;
 
-    if (!invoiceDateValue) {
-      throw new RangeError('Invoice date not found in invoice file');
-    }
+    let invoiceDate: Date | undefined;
 
     if (
-      !(invoiceDateValue.year && invoiceDateValue.month && invoiceDateValue.day)
+      invoiceDateValue &&
+      invoiceDateValue.year &&
+      invoiceDateValue.month &&
+      invoiceDateValue.day
     ) {
-      throw new RangeError(
-        `Invalid invoice date ${invoiceDateValue} in invoice file`
+      invoiceDate = new Date(
+        invoiceDateValue.year,
+        invoiceDateValue.month,
+        invoiceDateValue.day
       );
     }
-
-    const invoiceDate = new Date(
-      invoiceDateValue.year,
-      invoiceDateValue.month,
-      invoiceDateValue.day
-    );
 
     const invoiceDueDateValue =
       invoiceParserProcessDocumentResponse.document?.entities?.find(
         entity => entity.type === 'due_date'
       )?.normalizedValue?.dateValue;
 
-    if (!invoiceDueDateValue) {
-      throw new RangeError('Invoice due date not found in invoice file');
-    }
+    let invoiceDueDate: Date | undefined;
 
     if (
-      !(
-        invoiceDueDateValue.year &&
-        invoiceDueDateValue.month &&
-        invoiceDueDateValue.day
-      )
+      invoiceDueDateValue &&
+      invoiceDueDateValue.year &&
+      invoiceDueDateValue.month &&
+      invoiceDueDateValue.day
     ) {
-      throw new RangeError(
-        `Invalid invoice due date ${invoiceDueDateValue} in invoice file`
+      invoiceDueDate = new Date(
+        invoiceDueDateValue.year,
+        invoiceDueDateValue.month,
+        invoiceDueDateValue.day
       );
     }
-
-    const invoiceDueDate = new Date(
-      invoiceDueDateValue.year,
-      invoiceDueDateValue.month,
-      invoiceDueDateValue.day
-    );
 
     const netAmount =
       invoiceParserProcessDocumentResponse.document?.entities?.find(
         entity => entity.type === 'net_amount'
       )?.normalizedValue?.text;
 
-    if (!netAmount) {
-      throw new RangeError('Net amount not found in invoice file');
-    }
-
     const totalTaxAmount =
       invoiceParserProcessDocumentResponse.document?.entities?.find(
         entity => entity.type === 'total_tax_amount'
       )?.normalizedValue?.text;
-
-    if (!totalTaxAmount) {
-      throw new RangeError('Total tax amount not found in invoice file');
-    }
 
     const totalAmount =
       invoiceParserProcessDocumentResponse.document?.entities?.find(
         entity => entity.type === 'total_amount'
       )?.normalizedValue?.text;
 
-    if (!totalAmount) {
-      throw new RangeError('Total amount not found in invoice file');
-    }
-
     const currency =
       invoiceParserProcessDocumentResponse.document?.entities?.find(
         entity => entity.type === 'currency'
       )?.normalizedValue?.text;
 
-    if (!currency) {
-      throw new RangeError('Currency not found in invoice file');
+    const vendorAddress =
+      invoiceParserProcessDocumentResponse.document?.entities?.find(
+        entity => entity.type === 'supplier_address'
+      )?.mentionText;
+
+    let vendorGooglePlaceId: string | null | undefined;
+
+    if (vendorAddress) {
+      const [validateAddressResponse] =
+        await this.options.google.addressValidation.client.validateAddress({
+          address: {
+            addressLines: [vendorAddress],
+          },
+        });
+
+      vendorGooglePlaceId = validateAddressResponse.result?.geocode?.placeId;
     }
 
-    const [validateAddressResponse] =
-      await this.options.google.addressValidation.client.validateAddress({
-        address: {
-          addressLines: [vendorAddress],
-        },
-      });
-
-    const vendorAddressGooglePlaceId =
-      validateAddressResponse.result?.geocode?.placeId;
-
-    if (!vendorAddressGooglePlaceId) {
-      throw new RangeError(`Invalid vendor address ${vendorAddress}`);
-    }
-
-    const vendors = await this.options.vendors.client.listVendors({
-      name: vendorName,
-    });
-
-    const vendor = vendors.find(
-      vendor => vendor.googlePlaceId === vendorAddressGooglePlaceId
-    );
-
-    if (!vendor) {
-      throw new NotFoundError(
-        `Vendor ${vendorName} with address ${vendorAddress} not found`
-      );
-    }
-
-    const invoice = await this.options.db.transaction(async trx => {
+    const updatedInvoice = await this.options.db.transaction(async trx => {
       const [invoice] = await trx<Invoice>(this.invoicesTable)
-        .insert({
-          vendorId: vendor.id,
-          date: invoiceDate,
-          dueDate: invoiceDueDate,
-          netAmount: Number.parseFloat(netAmount),
-          totalTaxAmount: Number.parseFloat(totalTaxAmount),
-          totalAmount: Number.parseFloat(totalAmount),
-          currency,
+        .where({id: invoiceId})
+        .modify(queryBuilder => {
+          if (invoiceDate) {
+            queryBuilder.update({date: invoiceDate});
+          }
+
+          if (invoiceDueDate) {
+            queryBuilder.update({dueDate: invoiceDueDate});
+          }
+
+          if (netAmount) {
+            queryBuilder.update({netAmount: Number.parseFloat(netAmount)});
+          }
+
+          if (totalTaxAmount) {
+            queryBuilder.update({
+              totalTaxAmount: Number.parseFloat(totalTaxAmount),
+            });
+          }
+
+          if (totalAmount) {
+            queryBuilder.update({totalAmount: Number.parseFloat(totalAmount)});
+          }
+
+          if (currency) {
+            queryBuilder.update({currency});
+          }
+
+          if (vendorAddress && vendorGooglePlaceId) {
+            queryBuilder.update({vendorAddress, vendorGooglePlaceId});
+          }
+
+          if (
+            invoiceDate ||
+            invoiceDueDate ||
+            netAmount ||
+            totalTaxAmount ||
+            totalAmount ||
+            currency ||
+            (vendorAddress && vendorGooglePlaceId)
+          ) {
+            queryBuilder.update({updatedAt: new Date()});
+          }
         })
         .returning('*');
 
-      const gcsFileExtension = mimeTypes.extension(mimeType);
+      const gcsFileExtension = mimeTypes.extension(options.document.mimeType);
 
       if (!gcsFileExtension) {
-        throw new RangeError(`Invalid document mimeType ${mimeType}`);
+        throw new RangeError(
+          `Invalid document mimeType ${options.document.mimeType}`
+        );
       }
 
       const gcsBucket = this.options.google.storage.client.bucket(
@@ -216,20 +268,16 @@ class InvoicesService {
         gcsFile: gcsFile.name,
       });
 
-      await gcsFile.save(data);
+      await gcsFile.save(options.document.content, {
+        metadata: {
+          contentType: options.document.mimeType,
+        },
+      });
 
       return invoice;
     });
 
-    return invoice;
-  }
-
-  async getInvoiceById(invoiceId: string): Promise<Invoice | undefined> {
-    const [invoice] = await this.options
-      .db<Invoice>(this.invoicesTable)
-      .where({id: invoiceId});
-
-    return invoice;
+    return updatedInvoice;
   }
 }
 

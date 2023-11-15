@@ -1,16 +1,3 @@
-resource "google_artifact_registry_repository_iam_member" "vendors_service_repository_vendors_service_sa" {
-  location   = google_artifact_registry_repository.vendors_service.location
-  repository = google_artifact_registry_repository.vendors_service.name
-  role       = "roles/artifactregistry.reader"
-  member     = "serviceAccount:${var.vendors_service_sa_email}"
-}
-
-resource "google_secret_manager_secret_iam_member" "vendors_service_user_password_vendors_service_sa" {
-  secret_id = google_secret_manager_secret.vendors_service_user_password.secret_id
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${var.vendors_service_sa_email}"
-}
-
 resource "google_cloud_run_v2_service" "vendors_service" {
   name     = "vendors-service"
   location = "northamerica-northeast1"
@@ -18,7 +5,7 @@ resource "google_cloud_run_v2_service" "vendors_service" {
 
   template {
     service_account = var.vendors_service_sa_email
-    encryption_key  = var.default_confidential_crypto_key_id
+    encryption_key  = var.vendors_service_northamerica_northeast1_confidential_crypto_key_id
 
     scaling {
       max_instance_count = 3

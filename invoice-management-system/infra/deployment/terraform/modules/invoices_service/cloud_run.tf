@@ -1,22 +1,3 @@
-resource "google_artifact_registry_repository_iam_member" "invoices_service_repository_invoices_service_sa" {
-  location   = google_artifact_registry_repository.invoices_service.location
-  repository = google_artifact_registry_repository.invoices_service.name
-  role       = "roles/artifactregistry.reader"
-  member     = "serviceAccount:${var.invoices_service_sa_email}"
-}
-
-resource "google_secret_manager_secret_iam_member" "invoices_service_user_password_invoices_service_sa" {
-  secret_id = google_secret_manager_secret.invoices_service_user_password.secret_id
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${var.invoices_service_sa_email}"
-}
-
-resource "google_storage_bucket_iam_member" "invoice_documents_invoices_service_sa" {
-  bucket = google_storage_bucket.invoice_documents.name
-  role   = "roles/storage.objectUser"
-  member = "serviceAccount:${var.invoices_service_sa_email}"
-}
-
 resource "google_cloud_run_v2_service" "invoices_service" {
   name     = "invoices-service"
   location = "northamerica-northeast1"
@@ -24,7 +5,7 @@ resource "google_cloud_run_v2_service" "invoices_service" {
 
   template {
     service_account = var.invoices_service_sa_email
-    encryption_key  = var.default_confidential_crypto_key_id
+    encryption_key  = var.invoices_service_northamerica_northeast1_confidential_crypto_key_id
 
     scaling {
       max_instance_count = 3

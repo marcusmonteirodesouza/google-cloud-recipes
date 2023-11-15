@@ -8,7 +8,7 @@ resource "google_artifact_registry_repository" "invoices_service" {
   location      = "northamerica-northeast1"
   repository_id = "invoices-service-docker-repo"
   format        = "DOCKER"
-  kms_key_name  = var.default_confidential_crypto_key_id
+  kms_key_name  = var.invoices_service_northamerica_northeast1_confidential_crypto_key_id
 }
 
 resource "docker_image" "invoices_service" {
@@ -27,4 +27,11 @@ resource "docker_registry_image" "invoices_service" {
   triggers = {
     docker_image_repo_digest = docker_image.invoices_service.repo_digest
   }
+}
+
+resource "google_artifact_registry_repository_iam_member" "invoices_service_repository_invoices_service_sa" {
+  location   = google_artifact_registry_repository.invoices_service.location
+  repository = google_artifact_registry_repository.invoices_service.name
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:${var.invoices_service_sa_email}"
 }

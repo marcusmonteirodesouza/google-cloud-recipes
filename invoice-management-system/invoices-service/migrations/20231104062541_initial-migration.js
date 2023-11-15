@@ -11,24 +11,26 @@ exports.up = async function (knex) {
 
       table.string('vendor_id').notNullable();
 
-      table
-        .enu('status', ['inReview', 'approved', 'denied'], {
-          useNative: true,
-          enumName: 'invoice_status',
-        })
-        .defaultTo('inReview');
+      table.enu('status', ['created', 'inReview', 'approved', 'denied'], {
+        useNative: true,
+        enumName: 'invoice_status',
+      });
 
-      table.date('date').notNullable();
+      table.date('date');
 
-      table.date('due_date').notNullable();
+      table.date('due_date');
 
-      table.decimal('net_amount').notNullable();
+      table.decimal('net_amount');
 
-      table.decimal('total_tax_amount').notNullable();
+      table.decimal('total_tax_amount');
 
-      table.decimal('total_amount').notNullable();
+      table.decimal('total_amount');
 
-      table.string('currency', 3).notNullable();
+      table.string('currency', 3);
+
+      table.string('vendor_address');
+
+      table.string('vendor_google_place_id');
 
       table.timestamps(true, true);
     });
