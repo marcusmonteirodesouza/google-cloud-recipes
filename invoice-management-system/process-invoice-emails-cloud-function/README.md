@@ -1,1 +1,1 @@
-# Google Cloud Demos - Invoice Management System - Process Invoice Emails
+# Google Cloud Demos - Invoice Management System - Process Invoice Emails Cloud Function
