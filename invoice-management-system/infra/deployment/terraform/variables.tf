@@ -38,6 +38,17 @@ variable "vendors_management_app_domain" {
   description = "Vendor Management App domain."
 }
 
+variable "sendgrid_api_key" {
+  type        = string
+  description = "SendGrid API key."
+  sensitive   = true
+}
+
+variable "sendgrid_from_email" {
+  type        = string
+  description = "Email address to send emails from."
+}
+
 variable "process_invoice_emails_gmail_address" {
   type        = string
   description = "Gmail address to process Invoice messages from."

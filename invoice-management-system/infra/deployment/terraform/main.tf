@@ -45,6 +45,7 @@ module "iam" {
   vendors_management_app_northamerica_northeast1_confidential_crypto_key_id                = module.kms.vendors_management_app_northamerica_northeast1_confidential_crypto_key_id
   vendors_service_northamerica_northeast1_confidential_crypto_key_id                       = module.kms.vendors_service_northamerica_northeast1_confidential_crypto_key_id
   vendors_service_northamerica_northeast1_restricted_crypto_key_id                         = module.kms.invoices_service_northamerica_northeast1_restricted_crypto_key_id
+  send_email_cloud_function_northamerica_northeast1_confidential_crypto_key_id             = module.kms.send_email_cloud_function_northamerica_northeast1_confidential_crypto_key_id
   process_invoice_emails_cloud_function_northamerica_northeast1_confidential_crypto_key_id = module.kms.process_invoice_emails_cloud_function_northamerica_northeast1_confidential_crypto_key_id
   process_invoice_emails_cloud_function_northamerica_northeast1_restricted_crypto_key_id   = module.kms.process_invoice_emails_cloud_function_northamerica_northeast1_restricted_crypto_key_id
 }
@@ -87,6 +88,16 @@ module "vendors_management_app" {
   vendors_management_app_users_group                                        = var.vendors_management_app_users_group
   vendors_management_app_northamerica_northeast1_confidential_crypto_key_id = module.kms.vendors_management_app_northamerica_northeast1_confidential_crypto_key_id
   vendors_service_name                                                      = module.vendors_service.name
+}
+
+module "send_email_cloud_function" {
+  source = "./modules/send_email_cloud_function"
+
+  trust_vpc_access_connector_northamerica_northeast1_id                        = module.network.trust_vpc_access_connector_northamerica_northeast1_id
+  send_email_cloud_function_northamerica_northeast1_confidential_crypto_key_id = module.kms.send_email_cloud_function_northamerica_northeast1_confidential_crypto_key_id
+  send_email_cloud_function_sa_email                                           = module.iam.send_email_cloud_function_sa_email
+  sendgrid_api_key                                                             = var.sendgrid_api_key
+  sendgrid_from_email                                                          = var.sendgrid_from_email
 }
 
 module "process_invoice_emails_cloud_function" {
