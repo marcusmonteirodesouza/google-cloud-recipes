@@ -38,3 +38,8 @@ variable "vendors_service_name" {
   type        = string
   description = "Vendors Service Cloud Run service name."
 }
+
+variable "send_email_pubsub_topic_name" {
+  type        = string
+  description = "Send Email PubSub topic name."
+}

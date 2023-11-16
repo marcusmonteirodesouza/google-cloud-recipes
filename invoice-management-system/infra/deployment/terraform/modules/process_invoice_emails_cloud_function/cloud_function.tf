@@ -62,10 +62,12 @@ resource "google_cloudfunctions2_function" "process_invoice_emails" {
     service_account_email = var.process_invoice_emails_cloud_function_sa_email
 
     environment_variables = {
-      GMAIL_ADDRESS             = var.gmail_address
-      LOG_LEVEL                 = "INFO"
-      INVOICES_SERVICE_BASE_URL = data.google_cloud_run_v2_service.invoices.uri
-      VENDORS_SERVICE_BASE_URL  = data.google_cloud_run_v2_service.vendors.uri
+      GMAIL_ADDRESS                       = var.gmail_address
+      LOG_LEVEL                           = "INFO"
+      GOOGLE_PROJECT_ID                   = data.google_project.project.project_id
+      GOOGLE_SEND_EMAIL_PUBSUB_TOPIC_NAME = var.send_email_pubsub_topic_name
+      INVOICES_SERVICE_BASE_URL           = data.google_cloud_run_v2_service.invoices.uri
+      VENDORS_SERVICE_BASE_URL            = data.google_cloud_run_v2_service.vendors.uri
     }
 
     secret_environment_variables {
@@ -87,6 +89,7 @@ resource "google_cloudfunctions2_function" "process_invoice_emails" {
   }
 
   depends_on = [
-    google_secret_manager_secret_iam_member.gmail_app_password_process_invoice_emails_cloud_function_sa
+    google_secret_manager_secret_iam_member.gmail_app_password_process_invoice_emails_cloud_function_sa,
+    google_pubsub_topic_iam_member.send_email_process_invoice_emails_sa
   ]
 }

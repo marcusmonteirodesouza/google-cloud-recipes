@@ -111,6 +111,7 @@ module "process_invoice_emails_cloud_function" {
   gmail_app_password                                                                       = var.process_invoice_emails_gmail_app_password
   invoices_service_name                                                                    = module.invoices_service.name
   vendors_service_name                                                                     = module.vendors_service.name
+  send_email_pubsub_topic_name                                                             = module.send_email_cloud_function.pubsub_topic_name
 }
 
 resource "google_compute_address" "load_balancer" {
