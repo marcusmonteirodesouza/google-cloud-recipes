@@ -66,8 +66,8 @@ resource "google_cloudfunctions2_function" "process_invoice_emails" {
       LOG_LEVEL                           = "INFO"
       GOOGLE_PROJECT_ID                   = data.google_project.project.project_id
       GOOGLE_SEND_EMAIL_PUBSUB_TOPIC_NAME = var.send_email_pubsub_topic_name
-      INVOICES_SERVICE_BASE_URL           = data.google_cloud_run_v2_service.invoices.uri
-      VENDORS_SERVICE_BASE_URL            = data.google_cloud_run_v2_service.vendors.uri
+      INVOICES_SERVICE_BASE_URL           = var.invoices_service_uri
+      VENDORS_SERVICE_BASE_URL            = var.vendors_service_uri
     }
 
     secret_environment_variables {

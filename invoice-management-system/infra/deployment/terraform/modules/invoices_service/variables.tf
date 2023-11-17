@@ -28,7 +28,7 @@ variable "invoices_service_us_central1_restricted_crypto_key_id" {
   description = "Invoices Service us-central1 restricted KMS crypto key ID."
 }
 
-variable "vendors_service_name" {
+variable "vendors_service_uri" {
   type        = string
-  description = "Vendors Service Cloud Run service name."
+  description = "Vendors Service Cloud Run service URI."
 }

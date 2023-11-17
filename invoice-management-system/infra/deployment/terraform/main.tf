@@ -83,7 +83,7 @@ module "invoices_service" {
   invoices_service_northamerica_northeast1_confidential_crypto_key_id = module.kms.invoices_service_northamerica_northeast1_confidential_crypto_key_id
   invoices_service_northamerica_northeast1_restricted_crypto_key_id   = module.kms.invoices_service_northamerica_northeast1_restricted_crypto_key_id
   invoices_service_us_central1_restricted_crypto_key_id               = module.kms.invoices_service_us_central1_restricted_crypto_key_id
-  vendors_service_name                                                = module.vendors_service.name
+  vendors_service_uri                                                 = module.vendors_service.uri
 }
 
 module "vendors_management_app" {
@@ -94,7 +94,7 @@ module "vendors_management_app" {
   vendors_management_app_sa_email                                           = module.iam.vendors_management_app_sa_email
   vendors_management_app_users_group                                        = var.vendors_management_app_users_group
   vendors_management_app_northamerica_northeast1_confidential_crypto_key_id = module.kms.vendors_management_app_northamerica_northeast1_confidential_crypto_key_id
-  vendors_service_name                                                      = module.vendors_service.name
+  vendors_service_uri                                                       = module.vendors_service.uri
 }
 
 module "send_email_cloud_function" {
@@ -116,8 +116,8 @@ module "process_invoice_emails_cloud_function" {
   process_invoice_emails_cloud_function_sa_email                                           = module.iam.process_invoice_emails_cloud_function_sa_email
   gmail_address                                                                            = var.process_invoice_emails_gmail_address
   gmail_app_password                                                                       = var.process_invoice_emails_gmail_app_password
-  invoices_service_name                                                                    = module.invoices_service.name
-  vendors_service_name                                                                     = module.vendors_service.name
+  invoices_service_uri                                                                     = module.invoices_service.uri
+  vendors_service_uri                                                                      = module.vendors_service.uri
   send_email_pubsub_topic_name                                                             = module.send_email_cloud_function.pubsub_topic_name
 }
 

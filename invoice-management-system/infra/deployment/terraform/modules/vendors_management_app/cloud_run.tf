@@ -57,7 +57,7 @@ resource "google_cloud_run_v2_service" "vendors_management_app" {
       }
       env {
         name  = "VENDORS_SERVICE_BASE_URL"
-        value = data.google_cloud_run_v2_service.vendors.uri
+        value = var.vendors_service_uri
       }
     }
 

@@ -12,6 +12,7 @@ locals {
     "containeranalysis.googleapis.com",
     "contentwarehouse.googleapis.com",
     "documentai.googleapis.com",
+    "eventarc.googleapis.com",
     "gmail.googleapis.com",
     "iam.googleapis.com",
     "iap.googleapis.com",

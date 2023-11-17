@@ -29,14 +29,14 @@ variable "gmail_app_password" {
   sensitive   = true
 }
 
-variable "invoices_service_name" {
+variable "invoices_service_uri" {
   type        = string
-  description = "Invoices Service Cloud Run service name."
+  description = "Invoices Service Cloud Run service URI."
 }
 
-variable "vendors_service_name" {
+variable "vendors_service_uri" {
   type        = string
-  description = "Vendors Service Cloud Run service name."
+  description = "Vendors Service Cloud Run service URI."
 }
 
 variable "send_email_pubsub_topic_name" {

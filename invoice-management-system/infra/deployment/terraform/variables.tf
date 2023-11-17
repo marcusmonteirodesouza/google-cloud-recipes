@@ -23,11 +23,6 @@ variable "oauth2_client_secret" {
   sensitive   = true
 }
 
-variable "support_email" {
-  type        = string
-  description = "User support email."
-}
-
 variable "vendors_management_app_users_group" {
   type        = string
   description = "Vendors Management App Users Google group."

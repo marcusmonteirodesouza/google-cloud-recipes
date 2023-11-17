@@ -23,7 +23,7 @@ variable "vendors_management_app_northamerica_northeast1_confidential_crypto_key
   description = "Vendors Management App northamerica-northeast1 confidential KMS crypto key ID."
 }
 
-variable "vendors_service_name" {
+variable "vendors_service_uri" {
   type        = string
-  description = "Vendors Service Cloud Run service name."
+  description = "Vendors Service Cloud Run service URI."
 }
