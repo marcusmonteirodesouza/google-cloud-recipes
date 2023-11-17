@@ -2,6 +2,10 @@ output "bootstrap_northamerica_northeast1_confidential_crypto_key_id" {
   value = google_kms_crypto_key.bootstrap_northamerica_northeast1_confidential.id
 }
 
+output "documentai_warehouse_us_central1_confidential_crypto_key_id" {
+  value = google_kms_crypto_key.documentai_warehouse_us_central1_restricted.id
+}
+
 output "invoices_service_northamerica_northeast1_confidential_crypto_key_id" {
   value = google_kms_crypto_key.invoices_service_northamerica_northeast1_confidential.id
 }

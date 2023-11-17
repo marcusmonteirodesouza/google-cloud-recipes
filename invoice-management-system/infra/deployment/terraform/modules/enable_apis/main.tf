@@ -10,6 +10,7 @@ locals {
     "cloudscheduler.googleapis.com",
     "compute.googleapis.com",
     "containeranalysis.googleapis.com",
+    "contentwarehouse.googleapis.com",
     "documentai.googleapis.com",
     "gmail.googleapis.com",
     "iam.googleapis.com",

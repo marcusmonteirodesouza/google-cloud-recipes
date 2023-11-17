@@ -39,6 +39,7 @@ module "iam" {
   source = "./modules/iam"
 
   bootstrap_northamerica_northeast1_confidential_crypto_key_id                             = module.kms.bootstrap_northamerica_northeast1_confidential_crypto_key_id
+  documentai_warehouse_us_central1_restricted_crypto_key_id                                = module.kms.documentai_warehouse_us_central1_confidential_crypto_key_id
   invoices_service_northamerica_northeast1_confidential_crypto_key_id                      = module.kms.invoices_service_northamerica_northeast1_confidential_crypto_key_id
   invoices_service_northamerica_northeast1_restricted_crypto_key_id                        = module.kms.invoices_service_northamerica_northeast1_restricted_crypto_key_id
   invoices_service_us_central1_restricted_crypto_key_id                                    = module.kms.invoices_service_us_central1_restricted_crypto_key_id
@@ -48,6 +49,12 @@ module "iam" {
   send_email_cloud_function_northamerica_northeast1_confidential_crypto_key_id             = module.kms.send_email_cloud_function_northamerica_northeast1_confidential_crypto_key_id
   process_invoice_emails_cloud_function_northamerica_northeast1_confidential_crypto_key_id = module.kms.process_invoice_emails_cloud_function_northamerica_northeast1_confidential_crypto_key_id
   process_invoice_emails_cloud_function_northamerica_northeast1_restricted_crypto_key_id   = module.kms.process_invoice_emails_cloud_function_northamerica_northeast1_restricted_crypto_key_id
+}
+
+module "documentai_warehouse" {
+  source = "./modules/documentai_warehouse"
+
+  documentai_warehouse_us_central1_restricted_crypto_key_id = module.kms.documentai_warehouse_us_central1_confidential_crypto_key_id
 }
 
 module "network" {
