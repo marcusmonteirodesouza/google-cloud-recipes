@@ -73,6 +73,60 @@ class InvoicesRouter {
       }
     );
 
+    router.get(
+      '/',
+      celebrate({
+        [Segments.QUERY]: Joi.object().keys({
+          status: Joi.string().valid(...Object.values(InvoiceStatus)),
+          vendorId: Joi.string().uuid(),
+          orderBy: Joi.string(),
+        }),
+      }),
+      async (req, res, next) => {
+        try {
+          const {status, vendorId} = req.query;
+
+          const orderByQueryParam = req.query.orderBy as string;
+
+          let orderBy: {
+            field: 'dueDate';
+            direction: 'asc' | 'desc';
+          }[] = [];
+
+          if (orderByQueryParam) {
+            orderBy = orderByQueryParam.split(',').map(orderByClause => {
+              const [field, direction] = orderByClause.split(' ');
+
+              if (field !== 'dueDate') {
+                throw new Error();
+              }
+
+              if (direction !== 'asc' && direction !== 'desc') {
+                throw new RangeError(
+                  `Invalid direction in orderBy clause ${orderByClause}`
+                );
+              }
+
+              return {
+                field,
+                direction,
+              };
+            });
+          }
+
+          const vendors = await this.options.invoices.service.listInvoices({
+            status: status as InvoiceStatus,
+            vendorId: vendorId as string,
+            orderBy,
+          });
+
+          return res.json(vendors);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
     router.patch(
       '/:invoiceId',
       celebrate({

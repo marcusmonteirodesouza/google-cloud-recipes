@@ -35,6 +35,15 @@ interface InvoicesServiceOptions {
   };
 }
 
+interface ListInvoicesOptions {
+  status?: InvoiceStatus;
+  vendorId?: string;
+  orderBy?: {
+    field: 'dueDate';
+    direction: 'asc' | 'desc';
+  }[];
+}
+
 interface UpdateInvoiceOptions {
   status?: InvoiceStatus;
 }
@@ -242,6 +251,31 @@ class InvoicesService {
       .where({id: invoiceId});
 
     return invoice;
+  }
+
+  async listInvoices(options: ListInvoicesOptions): Promise<Invoice[]> {
+    return await this.options
+      .db<Invoice>(this.invoicesTable)
+      .modify(queryBuilder => {
+        if (options?.status) {
+          queryBuilder.where({status: options.status});
+        }
+
+        if (options?.vendorId) {
+          queryBuilder.where({vendorId: options.vendorId});
+        }
+
+        if (options?.orderBy) {
+          queryBuilder.orderBy(
+            options.orderBy.map(ordering => {
+              return {
+                column: ordering.field,
+                order: ordering.direction,
+              };
+            })
+          );
+        }
+      });
   }
 
   async updateInvoice(
