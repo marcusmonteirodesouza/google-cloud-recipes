@@ -9,12 +9,18 @@ exports.up = async function (knex) {
         .uuid('id', {primaryKey: true})
         .defaultTo(knex.raw('gen_random_uuid()'));
 
-      table.string('vendor_id').notNullable();
-
       table.enu('status', ['created', 'inReview', 'approved', 'denied'], {
         useNative: true,
         enumName: 'invoice_status',
       });
+
+      table.string('vendor_id').notNullable();
+
+      table.string('vendor_invoice_id').notNullable();
+
+      table.string('vendor_address');
+
+      table.string('vendor_google_place_id');
 
       table.date('date');
 
@@ -27,10 +33,6 @@ exports.up = async function (knex) {
       table.decimal('total_amount');
 
       table.string('currency', 3);
-
-      table.string('vendor_address');
-
-      table.string('vendor_google_place_id');
 
       table.timestamps(true, true);
     });

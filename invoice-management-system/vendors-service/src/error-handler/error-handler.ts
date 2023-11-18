@@ -30,11 +30,11 @@ class ErrorResponse {
 }
 
 class ErrorHandler {
-  public async handleError(error: Error, req: Request, res: Response) {
-    req.log.error(error);
+  public async handleError(err: Error, req: Request, res: Response) {
+    req.log.error({err});
 
-    if (isCelebrateError(error)) {
-      const errors = Array.from(error.details, ([, value]) => value.message);
+    if (isCelebrateError(err)) {
+      const errors = Array.from(err.details, ([, value]) => value.message);
       const errorMessage = errors.join('\n');
       return res
         .status(StatusCodes.BAD_REQUEST)
@@ -43,35 +43,35 @@ class ErrorHandler {
         );
     }
 
-    if (error instanceof AlreadyExistsError) {
+    if (err instanceof AlreadyExistsError) {
       return res
         .status(StatusCodes.CONFLICT)
         .json(
-          new ErrorResponse(ErrorResponseCode.AlreadyExists, error.message)
+          new ErrorResponse(ErrorResponseCode.AlreadyExists, err.message)
         );
     }
 
-    if (error instanceof ForbiddenError) {
+    if (err instanceof ForbiddenError) {
       return res
         .status(StatusCodes.FORBIDDEN)
-        .json(new ErrorResponse(ErrorResponseCode.Forbidden, error.message));
+        .json(new ErrorResponse(ErrorResponseCode.Forbidden, err.message));
     }
 
-    if (error instanceof NotFoundError) {
+    if (err instanceof NotFoundError) {
       return res
         .status(StatusCodes.NOT_FOUND)
-        .json(new ErrorResponse(ErrorResponseCode.NotFound, error.message));
+        .json(new ErrorResponse(ErrorResponseCode.NotFound, err.message));
     }
 
-    if (error instanceof RangeError) {
+    if (err instanceof RangeError) {
       return res
         .status(StatusCodes.UNPROCESSABLE_ENTITY)
         .json(
-          new ErrorResponse(ErrorResponseCode.InvalidRequest, error.message)
+          new ErrorResponse(ErrorResponseCode.InvalidRequest, err.message)
         );
     }
 
-    if (error instanceof UnauthorizedError) {
+    if (err instanceof UnauthorizedError) {
       return res
         .status(StatusCodes.UNAUTHORIZED)
         .json(

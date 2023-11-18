@@ -52,72 +52,13 @@ class InvoicesService {
 
   constructor(private readonly options: InvoicesServiceOptions) {}
 
-  async createInvoice(vendorId: string): Promise<Invoice> {
-    const vendor = await this.options.vendors.client.getVendorById(vendorId);
-
-    if (!vendor) {
-      throw new NotFoundError(`Vendor ${vendorId} not found`);
-    }
-
-    const [invoice] = await this.options
-      .db<Invoice>(this.invoicesTable)
-      .insert({vendorId: vendor.id, status: InvoiceStatus.Created})
-      .returning('*');
-
-    return invoice;
-  }
-
-  async getInvoiceById(invoiceId: string): Promise<Invoice | undefined> {
-    const [invoice] = await this.options
-      .db<Invoice>(this.invoicesTable)
-      .where({id: invoiceId});
-
-    return invoice;
-  }
-
-  async updateInvoice(
-    invoiceId: string,
-    options: UpdateInvoiceOptions
-  ): Promise<Invoice> {
-    const invoice = await this.getInvoiceById(invoiceId);
-
-    if (!invoice) {
-      throw new NotFoundError(`Invoice ${invoiceId} not found`);
-    }
-
-    const [updatedInvoice] = await this.options
-      .db<Invoice>(this.invoicesTable)
-      .where({id: invoice.id})
-      .modify(queryBuilder => {
-        if (options.status) {
-          queryBuilder.update({status: options.status});
-        }
-
-        if (options.status) {
-          queryBuilder.update({updatedAt: new Date()});
-        }
-      })
-      .returning('*');
-
-    return updatedInvoice;
-  }
-
-  async uploadInvoiceDocument(
-    invoiceId: string,
-    options: UploadInvoiceDocumentOptions
-  ): Promise<Invoice> {
+  async createInvoice(options: UploadInvoiceDocumentOptions): Promise<Invoice> {
     const validMimeTypes = ['application/pdf'];
 
     if (!validMimeTypes.includes(options.document.mimeType)) {
       throw new RangeError(
         `Invalid mimeType ${options.document.mimeType}. Expected one of ${validMimeTypes}`
       );
-    }
-
-    const invoice = await this.getInvoiceById(invoiceId);
-
-    if (!invoice) {
-      throw new NotFoundError(`Invoice ${invoiceId} not found`);
     }
 
     const [invoiceParserProcessDocumentResponse] =
@@ -130,6 +71,58 @@ class InvoicesService {
           },
         }
       );
+
+    const vendorInvoiceId =
+      invoiceParserProcessDocumentResponse.document?.entities?.find(
+        entity => entity.type === 'invoice_id'
+      )?.mentionText;
+
+    if (!vendorInvoiceId) {
+      throw new RangeError('Invoice ID not found in invoice document');
+    }
+
+    const vendorName =
+      invoiceParserProcessDocumentResponse.document?.entities?.find(
+        entity => entity.type === 'supplier_name'
+      )?.mentionText;
+
+    if (!vendorName) {
+      throw new RangeError(
+        `Vendor name not found in invoice ${vendorInvoiceId}`
+      );
+    }
+
+    const vendors = await this.options.vendors.client.listVendors({
+      name: vendorName,
+    });
+
+    if (vendors.length === 0) {
+      throw new NotFoundError(`Vendor ${vendorName} not found`);
+    }
+
+    if (vendors.length > 1) {
+      throw new Error(`More than one vendor with name ${vendorName} was found`);
+    }
+
+    const vendor = vendors[0];
+
+    const vendorAddress =
+      invoiceParserProcessDocumentResponse.document?.entities?.find(
+        entity => entity.type === 'supplier_address'
+      )?.mentionText;
+
+    let vendorGooglePlaceId: string | null | undefined;
+
+    if (vendorAddress) {
+      const [validateAddressResponse] =
+        await this.options.google.addressValidation.client.validateAddress({
+          address: {
+            addressLines: [vendorAddress],
+          },
+        });
+
+      vendorGooglePlaceId = validateAddressResponse.result?.geocode?.placeId;
+    }
 
     const invoiceDateValue =
       invoiceParserProcessDocumentResponse.document?.entities?.find(
@@ -191,69 +184,23 @@ class InvoicesService {
         entity => entity.type === 'currency'
       )?.normalizedValue?.text;
 
-    const vendorAddress =
-      invoiceParserProcessDocumentResponse.document?.entities?.find(
-        entity => entity.type === 'supplier_address'
-      )?.mentionText;
-
-    let vendorGooglePlaceId: string | null | undefined;
-
-    if (vendorAddress) {
-      const [validateAddressResponse] =
-        await this.options.google.addressValidation.client.validateAddress({
-          address: {
-            addressLines: [vendorAddress],
-          },
-        });
-
-      vendorGooglePlaceId = validateAddressResponse.result?.geocode?.placeId;
-    }
-
-    const updatedInvoice = await this.options.db.transaction(async trx => {
-      const [invoice] = await trx<Invoice>(this.invoicesTable)
-        .where({id: invoiceId})
-        .modify(queryBuilder => {
-          if (invoiceDate) {
-            queryBuilder.update({date: invoiceDate});
-          }
-
-          if (invoiceDueDate) {
-            queryBuilder.update({dueDate: invoiceDueDate});
-          }
-
-          if (netAmount) {
-            queryBuilder.update({netAmount: Number.parseFloat(netAmount)});
-          }
-
-          if (totalTaxAmount) {
-            queryBuilder.update({
-              totalTaxAmount: Number.parseFloat(totalTaxAmount),
-            });
-          }
-
-          if (totalAmount) {
-            queryBuilder.update({totalAmount: Number.parseFloat(totalAmount)});
-          }
-
-          if (currency) {
-            queryBuilder.update({currency});
-          }
-
-          if (vendorAddress && vendorGooglePlaceId) {
-            queryBuilder.update({vendorAddress, vendorGooglePlaceId});
-          }
-
-          if (
-            invoiceDate ||
-            invoiceDueDate ||
-            netAmount ||
-            totalTaxAmount ||
-            totalAmount ||
-            currency ||
-            (vendorAddress && vendorGooglePlaceId)
-          ) {
-            queryBuilder.update({updatedAt: new Date()});
-          }
+    const invoice = await this.options.db.transaction(async trx => {
+      const [invoice] = await this.options
+        .db<Invoice>(this.invoicesTable)
+        .insert({
+          status: InvoiceStatus.InReview,
+          vendorId: vendor.id,
+          vendorInvoiceId,
+          vendorAddress,
+          vendorGooglePlaceId,
+          date: invoiceDate,
+          dueDate: invoiceDueDate,
+          netAmount: netAmount ? Number.parseFloat(netAmount) : null,
+          totalTaxAmount: totalTaxAmount
+            ? Number.parseFloat(totalTaxAmount)
+            : null,
+          totalAmount: totalAmount ? Number.parseFloat(totalAmount) : null,
+          currency,
         })
         .returning('*');
 
@@ -285,6 +232,41 @@ class InvoicesService {
 
       return invoice;
     });
+
+    return invoice;
+  }
+
+  async getInvoiceById(invoiceId: string): Promise<Invoice | undefined> {
+    const [invoice] = await this.options
+      .db<Invoice>(this.invoicesTable)
+      .where({id: invoiceId});
+
+    return invoice;
+  }
+
+  async updateInvoice(
+    invoiceId: string,
+    options: UpdateInvoiceOptions
+  ): Promise<Invoice> {
+    const invoice = await this.getInvoiceById(invoiceId);
+
+    if (!invoice) {
+      throw new NotFoundError(`Invoice ${invoiceId} not found`);
+    }
+
+    const [updatedInvoice] = await this.options
+      .db<Invoice>(this.invoicesTable)
+      .where({id: invoice.id})
+      .modify(queryBuilder => {
+        if (options.status) {
+          queryBuilder.update({status: options.status});
+        }
+
+        if (options.status) {
+          queryBuilder.update({updatedAt: new Date()});
+        }
+      })
+      .returning('*');
 
     return updatedInvoice;
   }

@@ -56,7 +56,7 @@ class VendorsRouter {
               errors: [err.message],
             });
           }
-          req.log.error(err);
+          req.log.error({err});
           throw err;
         }
 
