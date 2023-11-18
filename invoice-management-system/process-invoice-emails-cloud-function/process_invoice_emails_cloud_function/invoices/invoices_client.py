@@ -12,41 +12,20 @@ class InvoicesClient:
     def __init__(self, base_url: str):
         self._invoices_service_base_url = base_url
 
-    def create_invoice(self, vendor_id: str) -> Union[Invoice, ErrorResponse]:
-        create_invoice_response = requests.post(
-            self._invoices_service_base_url,
-            json={"vendorId": vendor_id},
-            headers={"Accept": "application/json"},
-        )
-
-        create_invoice_response_json = create_invoice_response.json()
-
-        if create_invoice_response.status_code != 201:
-            return ErrorResponse(
-                code=create_invoice_response_json["error"]["code"],
-                message=create_invoice_response_json["error"]["message"],
-            )
-
-        return self._from_invoice_response_json(
-            invoice_response_json=create_invoice_response_json
-        )
-
-    def upload_invoice(
-        self, invoice_id: str, file_content: Any
-    ) -> Union[Invoice, ErrorResponse]:
+    def create_invoice(self, file_content: Any) -> Union[Invoice, ErrorResponse]:
         with tempfile.NamedTemporaryFile(delete_on_close=False) as fp:
             fp.write(file_content)
             fp.close()
             with open(fp.name, mode="rb") as f:
                 upload_invoice_response = requests.post(
-                    f"{self._invoices_service_base_url}/{invoice_id}/upload",
+                    self._invoices_service_base_url,
                     files={"file": ("invoice.pdf", f, "application/pdf")},
                     headers={"Accept": "application/json"},
                 )
 
         upload_invoice_response_json = upload_invoice_response.json()
 
-        if upload_invoice_response.status_code != 200:
+        if upload_invoice_response.status_code != 201:
             return ErrorResponse(
                 code=upload_invoice_response_json["error"]["code"],
                 message=upload_invoice_response_json["error"]["message"],
@@ -61,6 +40,9 @@ class InvoicesClient:
         return Invoice(
             _id=invoice_response_json["id"],
             vendor_id=invoice_response_json["vendorId"],
+            vendor_invoice_id=invoice_response_json["vendorInvoiceId"],
+            vendor_address=invoice_response_json["vendorAddress"],
+            vendor_google_place_id=invoice_response_json["vendorGooglePlaceId"],
             status=InvoiceStatus.from_str(invoice_response_json["status"]),
             date=datetime.datetime.fromisoformat(invoice_response_json["date"])
             if invoice_response_json["date"] is not None
@@ -78,8 +60,6 @@ class InvoicesClient:
             if invoice_response_json["totalAmount"] is not None
             else None,
             currency=invoice_response_json["currency"],
-            vendor_address=invoice_response_json["vendorAddress"],
-            vendor_google_place_id=invoice_response_json["vendorGooglePlaceId"],
             created_at=datetime.datetime.fromisoformat(
                 invoice_response_json["createdAt"]
             ),

@@ -39,7 +39,7 @@ class InvoiceEmailsProcessor:
                 re.search("<(.+?)>", retr_inbox_message_parsed["From"]).group(1).strip()
             )
 
-            logging.info(f"Processing message from vendor {vendor_email}")
+            logging.info(f"Processing message from vendor {vendor_email}...")
 
             list_vendors_response = self._vendors_client.list_vendors(
                 email=vendor_email
@@ -51,23 +51,23 @@ class InvoiceEmailsProcessor:
             if len(list_vendors_response) == 0:
                 logging.warning(f"Vendor {vendor_email} not found. Skipping it")
             elif len(list_vendors_response) == 1:
-                logging.info(
-                    f"Vendor {vendor_email} found. Retrieving invoice attachment"
-                )
-
                 vendor = list_vendors_response[0]
+
+                logging.info(
+                    f"Vendor with email {vendor.email} found. Name {vendor.name}. Retrieving invoice attachment..."
+                )
 
                 for part in retr_inbox_message_parsed.walk():
                     invoice_filename = part.get_filename()
                     if invoice_filename:
                         logging.info(
-                            f"Found invoice attachment for vendor {vendor.email}. Filename {invoice_filename}"
+                            f"Found invoice attachment for vendor {vendor.name} in email from {vendor.email}. Filename {invoice_filename}. Creating invoice..."
                         )
 
                         invoice_content = part.get_payload(decode=True)
 
                         create_invoice_response = self._invoices_client.create_invoice(
-                            vendor_id=vendor.id
+                            file_content=invoice_content
                         )
 
                         if isinstance(
@@ -75,26 +75,9 @@ class InvoiceEmailsProcessor:
                         ):
                             raise Exception(create_invoice_response)
 
-                        created_invoice = create_invoice_response
+                        invoice_after_file_upload = create_invoice_response
 
-                        logging.info(f"Invoice created {created_invoice}")
-
-                        logging.info(f"Uploading file for invoice {created_invoice.id}")
-
-                        upload_invoice_response = self._invoices_client.upload_invoice(
-                            invoice_id=created_invoice.id, file_content=invoice_content
-                        )
-
-                        if isinstance(
-                            upload_invoice_response, InvoicesClientErrorResponse
-                        ):
-                            raise Exception(upload_invoice_response)
-
-                        invoice_after_file_upload = upload_invoice_response
-
-                        logging.info(
-                            f"File for invoice {invoice_after_file_upload.id} uploaded successfully"
-                        )
+                        logging.info(f"Invoice {invoice_after_file_upload.id} created!")
 
                         self._send_invoice_received_email(
                             vendor=vendor, invoice=invoice_after_file_upload
@@ -118,7 +101,7 @@ class InvoiceEmailsProcessor:
 
         html_content = f"""
             <p>Hello, {vendor.name},</p>
-            <p>Your invoice {html_content_total_amount} {html_content_due_date} was received and is currently being processed. The invoice ID is <strong>{invoice.id}</strong>.</p>
+            <p>Your invoice with ID <strong>{invoice.vendor_invoice_id}</strong> {html_content_total_amount} {html_content_due_date} was received and is currently being processed.</p>
             <p>We will send you another email when the processing is completed.
             <p>Kind regards,</p>
             <p>The Invoice Management System team</p>
@@ -128,6 +111,6 @@ class InvoiceEmailsProcessor:
 
         self._email_client.send_email(
             to_email=vendor.email,
-            subject=f"Invoice Management System - Invoice {invoice.id}",
+            subject=f"Invoice Management System - Invoice {invoice.vendor_invoice_id}",
             html_content=html_content,
         )
