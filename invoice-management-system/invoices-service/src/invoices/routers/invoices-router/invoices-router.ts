@@ -2,9 +2,11 @@ import {Router} from 'express';
 import {Joi, Segments, celebrate} from 'celebrate';
 import {UploadedFile} from 'express-fileupload';
 import {StatusCodes} from 'http-status-codes';
+import mimeTypes from 'mime-types';
 import {VendorsClient} from '../../../common/clients/vendors';
 import {InvoicesService} from '../../services';
 import {InvoiceStatus} from '../../models';
+import {NotFoundError} from '../../../errors';
 
 interface InvoicesRouterOptions {
   vendors: {
@@ -51,27 +53,6 @@ class InvoicesRouter {
         return next(err);
       }
     });
-
-    router.get(
-      '/:invoiceId',
-      celebrate({
-        [Segments.PARAMS]: Joi.object().keys({
-          invoiceId: Joi.string().uuid().required(),
-        }),
-      }),
-      async (req, res, next) => {
-        try {
-          const {invoiceId} = req.params;
-
-          const invoice =
-            await this.options.invoices.service.getInvoiceById(invoiceId);
-
-          return res.json(invoice);
-        } catch (err) {
-          return next(err);
-        }
-      }
-    );
 
     router.get(
       '/',
@@ -121,6 +102,73 @@ class InvoicesRouter {
           });
 
           return res.json(vendors);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
+    router.get(
+      '/:invoiceId',
+      celebrate({
+        [Segments.PARAMS]: Joi.object().keys({
+          invoiceId: Joi.string().uuid().required(),
+        }),
+      }),
+      async (req, res, next) => {
+        try {
+          const {invoiceId} = req.params;
+
+          const invoice =
+            await this.options.invoices.service.getInvoiceById(invoiceId);
+
+          if (!invoice) {
+            throw new NotFoundError(`Invoice ${invoiceId} not found`);
+          }
+
+          return res.json(invoice);
+        } catch (err) {
+          return next(err);
+        }
+      }
+    );
+
+    router.get(
+      '/:invoiceId/download',
+      celebrate({
+        [Segments.PARAMS]: Joi.object().keys({
+          invoiceId: Joi.string().uuid().required(),
+        }),
+      }),
+      async (req, res, next) => {
+        try {
+          const {invoiceId} = req.params;
+
+          const invoiceDocumentFile =
+            await this.options.invoices.service.downloadInvoiceDocumentFile(
+              invoiceId
+            );
+
+          if (!invoiceDocumentFile) {
+            throw new NotFoundError(`Invoice ${invoiceId} not found`);
+          }
+
+          const fileExtension = mimeTypes.extension(
+            invoiceDocumentFile.mimeType
+          );
+
+          if (!fileExtension) {
+            throw new Error(
+              `Invalid mimeType ${invoiceDocumentFile.mimeType} for invoice ${invoiceId}`
+            );
+          }
+
+          res.set({
+            'Content-Type': invoiceDocumentFile.mimeType,
+            'Content-Length': invoiceDocumentFile.content.length,
+            'Content-Disposition': `attachment; filename="${invoiceId}.${fileExtension}"`,
+          });
+          return res.send(invoiceDocumentFile.content);
         } catch (err) {
           return next(err);
         }

@@ -48,11 +48,13 @@ interface UpdateInvoiceOptions {
   status?: InvoiceStatus;
 }
 
-interface UploadInvoiceDocumentOptions {
-  document: {
-    content: Buffer;
-    mimeType: string;
-  };
+interface InvoiceDocumentFile {
+  content: Buffer;
+  mimeType: string;
+}
+
+interface CreateInvoiceOptions {
+  document: InvoiceDocumentFile;
 }
 
 class InvoicesService {
@@ -61,7 +63,7 @@ class InvoicesService {
 
   constructor(private readonly options: InvoicesServiceOptions) {}
 
-  async createInvoice(options: UploadInvoiceDocumentOptions): Promise<Invoice> {
+  async createInvoice(options: CreateInvoiceOptions): Promise<Invoice> {
     const validMimeTypes = ['application/pdf'];
 
     if (!validMimeTypes.includes(options.document.mimeType)) {
@@ -276,6 +278,43 @@ class InvoicesService {
           );
         }
       });
+  }
+
+  async downloadInvoiceDocumentFile(
+    invoiceId: string
+  ): Promise<InvoiceDocumentFile | undefined> {
+    const [invoiceDocument] = await this.options
+      .db<InvoiceDocument>(this.invoiceDocumentsTable)
+      .where({invoiceId});
+
+    if (!invoiceDocument) {
+      return;
+    }
+
+    const invoiceDocumentGcsFile = this.options.google.storage.client
+      .bucket(invoiceDocument.gcsBucket)
+      .file(invoiceDocument.gcsFile);
+
+    if (!(await invoiceDocumentGcsFile.exists())) {
+      throw new Error(
+        `Google Storage file for invoice ${invoiceId} does not exist in bucket ${invoiceDocumentGcsFile.bucket.name}, file name ${invoiceDocumentGcsFile.name}`
+      );
+    }
+
+    const [invoiceDocumentFile] = await invoiceDocumentGcsFile.get();
+
+    if (!invoiceDocumentFile.metadata.contentType) {
+      throw new Error(
+        `Content Type is not set for file ${invoiceDocumentGcsFile.name} in bucket ${invoiceDocumentGcsFile.bucket.name}, invoice ${invoiceId}`
+      );
+    }
+
+    const [invoiceDocumentContent] = await invoiceDocumentGcsFile.download();
+
+    return {
+      content: invoiceDocumentContent,
+      mimeType: invoiceDocumentFile.metadata.contentType,
+    };
   }
 
   async updateInvoice(
