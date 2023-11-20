@@ -42,7 +42,7 @@ class InvoiceEmailsProcessor:
             logging.info(f"Processing message from vendor {vendor_email}...")
 
             list_vendors_response = self._vendors_client.list_vendors(
-                email=vendor_email
+                emails=[vendor_email]
             )
 
             if isinstance(list_vendors_response, VendorsClientErrorResponse):

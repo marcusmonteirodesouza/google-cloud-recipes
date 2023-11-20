@@ -12,7 +12,7 @@ interface OrderByClause {
 }
 
 interface ListVendorsOptions {
-  name?: string;
+  names?: string[];
   orderBy?: OrderByClause[];
 }
 
@@ -33,20 +33,16 @@ class VendorsClient {
 
   async listVendors(options?: ListVendorsOptions): Promise<Vendor[]> {
     try {
-      const params: {name?: string; orderBy?: string} = {};
+      const params: {names?: string[]; orderBy?: string[]} = {};
 
-      if (options?.name) {
-        params.name = options.name;
+      if (options?.names) {
+        params.names = options.names;
       }
 
       if (options?.orderBy) {
-        params.orderBy = options.orderBy
-          .slice(1)
-          .reduce((acc, orderByClause) => {
-            return `${acc} ${this.orderByClauseToQueryParamClause(
-              orderByClause
-            )}`;
-          }, this.orderByClauseToQueryParamClause(options.orderBy[0]));
+        params.orderBy = options.orderBy.map(
+          this.orderByClauseToQueryParamClause
+        );
       }
 
       const {data: vendors} = await axios.get(this.options.baseUrl, {

@@ -58,16 +58,19 @@ class InvoicesRouter {
       '/',
       celebrate({
         [Segments.QUERY]: Joi.object().keys({
-          status: Joi.string().valid(...Object.values(InvoiceStatus)),
-          vendorId: Joi.string().uuid(),
-          orderBy: Joi.string(),
+          ids: Joi.array().items(Joi.string().uuid()),
+          statuses: Joi.array().items(
+            Joi.string().valid(...Object.values(InvoiceStatus))
+          ),
+          vendorIds: Joi.array().items(Joi.string().uuid()),
+          orderBy: Joi.array().items(Joi.string()),
         }),
       }),
       async (req, res, next) => {
         try {
-          const {status, vendorId} = req.query;
+          const {ids, statuses, vendorIds} = req.query;
 
-          const orderByQueryParam = req.query.orderBy as string;
+          const orderByQueryParam = req.query.orderBy as string[];
 
           let orderBy: {
             field: 'dueDate';
@@ -75,7 +78,7 @@ class InvoicesRouter {
           }[] = [];
 
           if (orderByQueryParam) {
-            orderBy = orderByQueryParam.split(',').map(orderByClause => {
+            orderBy = orderByQueryParam.map(orderByClause => {
               const [field, direction] = orderByClause.split(' ');
 
               if (field !== 'dueDate') {
@@ -96,8 +99,9 @@ class InvoicesRouter {
           }
 
           const vendors = await this.options.invoices.service.listInvoices({
-            status: status as InvoiceStatus,
-            vendorId: vendorId as string,
+            ids: ids as string[],
+            statuses: statuses as InvoiceStatus[],
+            vendorIds: vendorIds as string[],
             orderBy,
           });
 

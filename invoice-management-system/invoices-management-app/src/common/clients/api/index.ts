@@ -1,2 +1,4 @@
 export {ApiClient} from './api-client';
-export {ErrorResponse} from './errors'
+export * from './invoices';
+export * from './vendors';
+export {ErrorResponse} from './errors';

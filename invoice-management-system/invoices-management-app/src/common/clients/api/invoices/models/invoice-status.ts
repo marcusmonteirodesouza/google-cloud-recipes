@@ -1,5 +1,5 @@
 enum InvoiceStatus {
-  InReview = 'inReview',
+  Created = 'created',
   Approved = 'approved',
   NotApproved = 'notApproved',
 }

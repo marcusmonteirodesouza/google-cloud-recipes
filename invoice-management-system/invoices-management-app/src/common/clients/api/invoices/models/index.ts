@@ -1,2 +1,2 @@
 export {Invoice} from './invoice';
-export {InvoiceStatus} from './invoice-status'
+export {InvoiceStatus} from './invoice-status';

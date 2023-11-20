@@ -1,1 +1,0 @@
-export {VendorsRouter} from './routers';

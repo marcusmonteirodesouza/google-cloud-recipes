@@ -3,10 +3,10 @@ import express from 'express';
 import {OAuth2Client} from 'google-auth-library';
 import {RegionBackendServicesClient} from '@google-cloud/compute';
 import * as lb from '@google-cloud/logging-bunyan';
-import {StatusCodes} from 'http-status-codes';
 import {ApiClient} from './common/clients/api';
 import {HealthCheckRouter} from './health-check';
 import {VendorsRouter} from './vendors';
+import {InvoicesRouter} from './invoices';
 import {Auth} from './middleware';
 import {errorHandler} from './error-handler';
 import {config} from './config';
@@ -37,16 +37,18 @@ async function createApp() {
 
   const apiClient = new ApiClient({
     vendorsService: {
-      baseUrl: config.vendorsService.baseUrl
+      baseUrl: config.vendorsService.baseUrl,
     },
     invoicesService: {
-      baseUrl: config.invoicesService.baseUrl
-    }
-  })
+      baseUrl: config.invoicesService.baseUrl,
+    },
+  });
 
   const healthCheckRouter = new HealthCheckRouter().router;
 
   const vendorsRouter = new VendorsRouter({apiClient}).router;
+
+  const invoicesRouter = new InvoicesRouter({apiClient}).router;
 
   const app = express();
 
@@ -67,13 +69,15 @@ async function createApp() {
 
   app.use(auth.requireAuth);
 
-  app.all('/', (req, res) => {
-    return res.redirect(StatusCodes.MOVED_PERMANENTLY, '/vendors');
+  app.get('/', (req, res) => {
+    res.render('index');
   });
 
   app.use('/healthz', healthCheckRouter);
 
   app.use('/vendors', vendorsRouter);
+
+  app.use('/invoices', invoicesRouter);
 
   app.use(
     async (

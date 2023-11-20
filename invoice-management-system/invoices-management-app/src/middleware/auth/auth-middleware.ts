@@ -44,8 +44,8 @@ class Auth {
       // TODO(Marcus): uncomment this!
 
       req.user = {
-        id: 'marcus.souza@gmail.com'
-      }
+        id: 'marcus.souza@gmail.com',
+      };
 
       return next();
     } catch (err) {

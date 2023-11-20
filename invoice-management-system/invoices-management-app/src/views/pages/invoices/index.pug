@@ -1,0 +1,21 @@
+extends ../../layouts/layout.pug
+
+block content
+  h1 Invoices
+  ul
+    li
+      a(href="/") Back
+  table
+    thead
+      tr
+        th Vendor
+        th Date
+        th Due Date
+        th Total Amount
+    tbody
+      each invoice in invoices
+        tr
+          td=invoice.vendorName
+          td=invoice.date ? invoice.date.toISOString().slice(0, 10) : invoice.date
+          td=invoice.dueDate ? invoice.dueDate.toISOString().slice(0, 10) : invoice.dueDate
+          td #{invoice.currency} #{invoice.totalAmount}

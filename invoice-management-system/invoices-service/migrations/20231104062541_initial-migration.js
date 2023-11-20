@@ -9,7 +9,7 @@ exports.up = async function (knex) {
         .uuid('id', {primaryKey: true})
         .defaultTo(knex.raw('gen_random_uuid()'));
 
-      table.enu('status', ['created', 'inReview', 'approved', 'denied'], {
+      table.enu('status', ['created', 'approved', 'notApproved'], {
         useNative: true,
         enumName: 'invoice_status',
       });

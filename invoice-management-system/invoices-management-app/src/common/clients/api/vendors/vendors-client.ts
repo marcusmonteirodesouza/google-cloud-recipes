@@ -1,6 +1,6 @@
-import axios, { isAxiosError } from 'axios';
+import axios, {isAxiosError} from 'axios';
 import {Vendor} from './models';
-import { ErrorResponse } from '../errors';
+import {ErrorResponse} from '../errors';
 
 interface VendorsClientOptions {
   baseUrl: string;
@@ -23,54 +23,56 @@ interface OrderByClause {
 class VendorsClient {
   constructor(private readonly options: VendorsClientOptions) {}
 
-  async createVendor(options: CreateVendorOptions): Promise<Vendor | ErrorResponse> {
+  async createVendor(options: CreateVendorOptions): Promise<Vendor> {
     try {
       const {data: vendor} = await axios.post(this.options.baseUrl, {
         name: options.name,
         email: options.email,
       });
 
-      return vendor;
+      return this.transformVendorResponse(vendor);
     } catch (err) {
-      return this.tryReturnErrorResponse(err);
+      throw this.tryMakeErrorResponse(err);
     }
   }
 
-  async getVendorById(vendorId: string): Promise<Vendor | ErrorResponse> {
+  async getVendorById(vendorId: string): Promise<Vendor> {
     try {
-      const {data: vendor} = await axios.get(`${this.options.baseUrl}/${vendorId}`)
+      const {data: vendor} = await axios.get(
+        `${this.options.baseUrl}/${vendorId}`
+      );
 
-      return vendor;
+      return this.transformVendorResponse(vendor);
     } catch (err) {
-      return this.tryReturnErrorResponse(err);
+      throw this.tryMakeErrorResponse(err);
     }
   }
 
-  async listVendors(options?: ListVendorsOptions): Promise<Vendor[] | ErrorResponse> {
+  async listVendors(options?: ListVendorsOptions): Promise<Vendor[]> {
     try {
-      const params: {orderBy?: string} = {};
+      const params: {orderBy?: string[]} = {};
 
       if (options?.orderBy) {
-        params.orderBy = options.orderBy.slice(1).reduce((acc, orderByClause) => {
-          return `${acc} ${this.orderByClauseToQueryParamClause(orderByClause)}`;
-        }, this.orderByClauseToQueryParamClause(options.orderBy[0]));
+        params.orderBy = options.orderBy.map(
+          this.orderByClauseToQueryParamClause
+        );
       }
-  
+
       const {data: vendors} = await axios.get(this.options.baseUrl, {
         params,
       });
-  
-      return vendors;
+
+      return vendors.map(this.transformVendorResponse);
     } catch (err) {
-      return this.tryReturnErrorResponse(err);
+      throw this.tryMakeErrorResponse(err);
     }
   }
 
-  async deleteVendorById(vendorId: string): Promise<void | ErrorResponse> {
+  async deleteVendorById(vendorId: string): Promise<void> {
     try {
       await axios.delete(`${this.options.baseUrl}/${vendorId}`);
     } catch (err) {
-      return this.tryReturnErrorResponse(err);
+      throw this.tryMakeErrorResponse(err);
     }
   }
 
@@ -80,18 +82,25 @@ class VendorsClient {
     return `${orderByClause.field} ${orderByClause.direction}`;
   }
 
-  private tryReturnErrorResponse(err: unknown): ErrorResponse {
+  private transformVendorResponse(vendor: Vendor): Vendor {
+    return {
+      ...vendor,
+      createdAt: new Date(vendor.createdAt),
+      updatedAt: new Date(vendor.updatedAt),
+    };
+  }
+
+  private tryMakeErrorResponse(err: unknown) {
     if (isAxiosError(err)) {
       if (err.response) {
         const errorData = err.response.data['error'];
 
-      return new ErrorResponse(errorData.code, errorData.message)
+        return new ErrorResponse(errorData.code, errorData.message);
       }
-      
     }
 
-    throw err;
+    return err;
   }
- }
+}
 
 export {VendorsClient};

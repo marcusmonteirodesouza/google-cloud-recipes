@@ -7,10 +7,10 @@ class ErrorPageError {
 }
 
 class ErrorHandler {
-  public async handleError(error: Error, req: Request, res: Response) {
-    req.log.error(error);
+  public async handleError(err: Error, req: Request, res: Response) {
+    req.log.error({err});
 
-    if (error instanceof UnauthorizedError) {
+    if (err instanceof UnauthorizedError) {
       return res.status(StatusCodes.UNAUTHORIZED).render('error', {
         error: new ErrorPageError('Unauthorized'),
       });

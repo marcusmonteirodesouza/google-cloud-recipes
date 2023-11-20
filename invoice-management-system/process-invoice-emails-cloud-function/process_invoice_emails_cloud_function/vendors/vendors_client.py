@@ -9,11 +9,11 @@ class VendorsClient:
     def __init__(self, base_url: str):
         self._vendors_service_base_url = base_url
 
-    def list_vendors(self, email=None) -> Union[list[Vendor], ErrorResponse]:
+    def list_vendors(self, emails: Union[list[str], None] = None) -> Union[list[Vendor], ErrorResponse]:
         params = {}
 
-        if email is not None:
-            params["email"] = email
+        if emails is not None:
+            params["emails"] = emails
 
         list_vendors_response = requests.get(
             self._vendors_service_base_url,

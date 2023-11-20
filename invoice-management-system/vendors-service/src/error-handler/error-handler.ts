@@ -46,9 +46,7 @@ class ErrorHandler {
     if (err instanceof AlreadyExistsError) {
       return res
         .status(StatusCodes.CONFLICT)
-        .json(
-          new ErrorResponse(ErrorResponseCode.AlreadyExists, err.message)
-        );
+        .json(new ErrorResponse(ErrorResponseCode.AlreadyExists, err.message));
     }
 
     if (err instanceof ForbiddenError) {
@@ -66,9 +64,7 @@ class ErrorHandler {
     if (err instanceof RangeError) {
       return res
         .status(StatusCodes.UNPROCESSABLE_ENTITY)
-        .json(
-          new ErrorResponse(ErrorResponseCode.InvalidRequest, err.message)
-        );
+        .json(new ErrorResponse(ErrorResponseCode.InvalidRequest, err.message));
     }
 
     if (err instanceof UnauthorizedError) {

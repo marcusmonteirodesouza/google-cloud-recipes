@@ -1,13 +1,13 @@
-import { InvoicesClient } from "./invoices";
-import { VendorsClient } from "./vendors";
+import {InvoicesClient} from './invoices';
+import {VendorsClient} from './vendors';
 
 interface ApiClientOptions {
   invoicesService: {
     baseUrl: string;
-  }
+  };
   vendorsService: {
     baseUrl: string;
-  }
+  };
 }
 
 class ApiClient {
@@ -16,12 +16,12 @@ class ApiClient {
 
   constructor(options: ApiClientOptions) {
     this.invoices = new InvoicesClient({
-      baseUrl: options.invoicesService.baseUrl
-    })
+      baseUrl: options.invoicesService.baseUrl,
+    });
     this.vendors = new VendorsClient({
-      baseUrl: options.vendorsService.baseUrl
-    })
+      baseUrl: options.vendorsService.baseUrl,
+    });
   }
 }
 
-export {ApiClient}
+export {ApiClient};

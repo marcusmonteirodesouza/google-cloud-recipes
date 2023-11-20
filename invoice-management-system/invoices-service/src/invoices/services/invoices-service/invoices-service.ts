@@ -36,8 +36,9 @@ interface InvoicesServiceOptions {
 }
 
 interface ListInvoicesOptions {
-  status?: InvoiceStatus;
-  vendorId?: string;
+  ids?: string[];
+  statuses?: InvoiceStatus[];
+  vendorIds?: string[];
   orderBy?: {
     field: 'dueDate';
     direction: 'asc' | 'desc';
@@ -104,7 +105,7 @@ class InvoicesService {
     }
 
     const vendors = await this.options.vendors.client.listVendors({
-      name: vendorName,
+      names: [vendorName],
     });
 
     if (vendors.length === 0) {
@@ -199,7 +200,7 @@ class InvoicesService {
       const [invoice] = await this.options
         .db<Invoice>(this.invoicesTable)
         .insert({
-          status: InvoiceStatus.InReview,
+          status: InvoiceStatus.Created,
           vendorId: vendor.id,
           vendorInvoiceId,
           vendorAddress,
@@ -255,16 +256,20 @@ class InvoicesService {
     return invoice;
   }
 
-  async listInvoices(options: ListInvoicesOptions): Promise<Invoice[]> {
+  async listInvoices(options?: ListInvoicesOptions): Promise<Invoice[]> {
     return await this.options
       .db<Invoice>(this.invoicesTable)
       .modify(queryBuilder => {
-        if (options?.status) {
-          queryBuilder.where({status: options.status});
+        if (options?.ids) {
+          queryBuilder.whereIn('id', options.ids);
         }
 
-        if (options?.vendorId) {
-          queryBuilder.where({vendorId: options.vendorId});
+        if (options?.statuses) {
+          queryBuilder.whereIn('status', options.statuses);
+        }
+
+        if (options?.vendorIds) {
+          queryBuilder.whereIn('vendorId', options.vendorIds);
         }
 
         if (options?.orderBy) {

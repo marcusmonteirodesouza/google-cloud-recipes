@@ -41,16 +41,17 @@ class VendorsRouter {
       '/',
       celebrate({
         [Segments.QUERY]: Joi.object().keys({
-          name: Joi.string(),
-          email: Joi.string().email(),
-          orderBy: Joi.string(),
+          ids: Joi.array().items(Joi.string().uuid()),
+          names: Joi.array().items(Joi.string()),
+          emails: Joi.array().items(Joi.string().email()),
+          orderBy: Joi.array().items(Joi.string()),
         }),
       }),
       async (req, res, next) => {
         try {
-          const {name, email} = req.query;
+          const {ids, names, emails} = req.query;
 
-          const orderByQueryParam = req.query.orderBy as string;
+          const orderByQueryParam = req.query.orderBy as string[];
 
           let orderBy: {
             field: 'name';
@@ -58,7 +59,7 @@ class VendorsRouter {
           }[] = [];
 
           if (orderByQueryParam) {
-            orderBy = orderByQueryParam.split(',').map(orderByClause => {
+            orderBy = orderByQueryParam.map(orderByClause => {
               const [field, direction] = orderByClause.split(' ');
 
               if (field !== 'name') {
@@ -79,8 +80,9 @@ class VendorsRouter {
           }
 
           const vendors = await this.options.vendorsService.listVendors({
-            name: name as string,
-            email: email as string,
+            ids: ids as string[],
+            names: names as string[],
+            emails: emails as string[],
             orderBy,
           });
 

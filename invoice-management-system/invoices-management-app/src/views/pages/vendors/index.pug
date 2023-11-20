@@ -2,12 +2,17 @@ extends ../../layouts/layout.pug
 
 block content
   h1 Vendors
-  a(href="/vendors/add") Add Vendor
-  button(id="delete-vendor-button" type="button" disabled) Delete
-  dialog(id="delete-vendor-dialog") 
-    p(id="delete-vendor-dialog-title")
-    button(id="cancel-delete-vendor-button" type="button") Cancel
-    button(id="confirm-delete-vendor-button" type="button") Delete
+  ul
+    li
+      a(href="/") Back
+    li
+      a(href="/vendors/add") Add Vendor
+    li
+      button(id="delete-vendor-button" type="button" disabled) Delete
+      dialog(id="delete-vendor-dialog") 
+        p(id="delete-vendor-dialog-title")
+        button(id="cancel-delete-vendor-button" type="button") Cancel
+        button(id="confirm-delete-vendor-button" type="button") Delete
   table
     thead
       tr

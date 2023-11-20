@@ -38,7 +38,7 @@ const config = {
   nodeEnv: envVars.NODE_ENV,
   port: envVars.PORT,
   invoicesService: {
-    baseUrl: envVars.INVOICES_SERVICE_BASE_URL
+    baseUrl: envVars.INVOICES_SERVICE_BASE_URL,
   },
   vendorsService: {
     baseUrl: envVars.VENDORS_SERVICE_BASE_URL,

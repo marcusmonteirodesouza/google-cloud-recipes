@@ -14,10 +14,11 @@ interface CreateVendorOptions {
 }
 
 interface ListVendorsOptions {
-  name?: string;
-  email?: string;
+  ids?: string[];
+  names?: string[];
+  emails?: string[];
   orderBy?: {
-    field: 'name';
+    field: 'name' | 'email';
     direction: 'asc' | 'desc';
   }[];
 }
@@ -71,12 +72,16 @@ class VendorsService {
     return await this.options
       .db<Vendor>(this.vendorsTable)
       .modify(queryBuilder => {
-        if (options?.name) {
-          queryBuilder.where({name: options.name});
+        if (options?.ids) {
+          queryBuilder.whereIn('id', options.ids);
         }
 
-        if (options?.email) {
-          queryBuilder.where({email: options.email});
+        if (options?.names) {
+          queryBuilder.whereIn('name', options.names);
+        }
+
+        if (options?.emails) {
+          queryBuilder.whereIn('email', options.emails);
         }
 
         if (options?.orderBy) {

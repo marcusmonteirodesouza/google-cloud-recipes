@@ -32,21 +32,6 @@ class VendorsRouter {
       }
     });
 
-    router.get('/detail/:vendorId', async (req, res, next) => {
-      try {
-        const {vendorId} = req.params;
-
-        const vendor = await this.options.apiClient.vendors.getVendorById(vendorId);
-
-        return res.render('vendors/detail', {
-          title: `${vendor.name} details`,
-          vendor
-        });
-      } catch (err) {
-        return next(err);
-      }
-    });
-
     router.get('/add', async (req, res, next) => {
       try {
         return res.render('vendors/add', {
@@ -71,7 +56,7 @@ class VendorsRouter {
               errors: [err.message],
             });
           }
-          req.log.error({err});
+
           throw err;
         }
 
