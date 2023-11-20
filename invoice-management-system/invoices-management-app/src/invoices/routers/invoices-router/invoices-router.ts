@@ -1,4 +1,5 @@
 import {Router} from 'express';
+import {sortBy} from 'lodash';
 import {ApiClient, InvoiceStatus} from '../../../common/clients/api';
 
 interface InvoicesRouterOptions {
@@ -39,6 +40,8 @@ class InvoicesRouter {
             };
           })
         );
+
+        invoices = sortBy(invoices, ['vendorName', 'date', 'dueDate']);
 
         return res.render('invoices', {
           title: 'Invoices List',

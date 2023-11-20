@@ -9,6 +9,7 @@ block content
     thead
       tr
         th Vendor
+        th Invoice ID
         th Date
         th Due Date
         th Total Amount
@@ -16,6 +17,7 @@ block content
       each invoice in invoices
         tr
           td=invoice.vendorName
+          td=invoice.vendorInvoiceId
           td=invoice.date ? invoice.date.toISOString().slice(0, 10) : invoice.date
           td=invoice.dueDate ? invoice.dueDate.toISOString().slice(0, 10) : invoice.dueDate
           td #{invoice.currency} #{invoice.totalAmount}

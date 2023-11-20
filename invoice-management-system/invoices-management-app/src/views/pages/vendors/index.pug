@@ -24,8 +24,7 @@ block content
         tr
           td
             input(data-id=`${vendor.id}` data-name=`${vendor.name}` type="checkbox")
-          td
-            a(href=`/vendors/detail/${vendor.id}`) #{vendor.name}
+          td=vendor.name
           td=vendor.email
 block scripts
   script(src='/js/vendors/index.js')

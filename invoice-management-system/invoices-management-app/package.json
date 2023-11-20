@@ -25,6 +25,7 @@
   "devDependencies": {
     "@types/bunyan": "^1.8.11",
     "@types/express": "^4.17.21",
+    "@types/lodash": "^4.14.201",
     "@types/node": "20.8.2",
     "dotenv": "^16.3.1",
     "gts": "^5.2.0",
@@ -40,6 +41,7 @@
     "google-auth-library": "^9.2.0",
     "http-status-codes": "^2.3.0",
     "joi": "^17.11.0",
+    "lodash": "^4.17.21",
     "pug": "^3.0.2"
   }
 }
