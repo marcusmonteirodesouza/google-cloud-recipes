@@ -1,0 +1,16 @@
+extends ../../../layouts/layout.pug
+
+block content
+  h1 Add Vendor
+  a(href="/vendors") Back
+  form(method="post")
+    div
+      label(for="name") Name 
+      input(id="name" type="text" name="name" minlength="1")
+    div
+      label(for="email") Email 
+      input(id="email" type="email" name="email")
+    ul
+      each error in errors
+        li=error
+    button Add
