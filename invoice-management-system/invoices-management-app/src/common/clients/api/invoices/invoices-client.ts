@@ -19,6 +19,18 @@ interface OrderByClause {
 class InvoicesClient {
   constructor(private readonly options: InvoicesClientOptions) {}
 
+  async getInvoiceById(invoiceId: string): Promise<Invoice> {
+    try {
+      const {data: invoice} = await axios.get(
+        `${this.options.baseUrl}/${invoiceId}`
+      );
+
+      return invoice;
+    } catch (err) {
+      throw this.tryMakeErrorResponse(err);
+    }
+  }
+
   async listInvoices(options?: ListInvoicesOptions): Promise<Invoice[]> {
     try {
       const params: {statuses?: string[]; orderBy?: string[]} = {};

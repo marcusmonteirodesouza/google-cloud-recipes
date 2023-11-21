@@ -52,6 +52,29 @@ class InvoicesRouter {
       }
     });
 
+    router.get('/:invoiceId', async (req, res, next) => {
+      try {
+        const {invoiceId} = req.params;
+
+        const invoice =
+          await this.options.apiClient.invoices.getInvoiceById(invoiceId);
+
+        const vendor = await this.options.apiClient.vendors.getVendorById(
+          invoice.vendorId
+        );
+
+        return res.render('invoices/details', {
+          title: `Invoice Details - ${vendor.name} ${invoice.vendorInvoiceId}`,
+          invoice: {
+            ...invoice,
+            vendorName: vendor.name,
+          },
+        });
+      } catch (err) {
+        return next(err);
+      }
+    });
+
     return router;
   }
 }
