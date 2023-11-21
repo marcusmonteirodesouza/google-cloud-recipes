@@ -3,6 +3,7 @@ import {DocumentProcessorServiceClient} from '@google-cloud/documentai';
 import {Storage} from '@google-cloud/storage';
 import {AddressValidationClient} from '@googlemaps/addressvalidation';
 import mimeTypes from 'mime-types';
+import * as currencies from '@dinero.js/currencies';
 import {VendorsClient} from '../../../common/clients/vendors';
 import {Invoice, InvoiceDocument, InvoiceStatus} from '../../models';
 import {NotFoundError} from '../../../errors';
@@ -196,6 +197,12 @@ class InvoicesService {
         entity => entity.type === 'currency'
       )?.normalizedValue?.text;
 
+    if (currency) {
+      if (!this.isValidCurrency(currency)) {
+        throw new RangeError(`Invalid currency ${currency}`);
+      }
+    }
+
     const invoice = await this.options.db.transaction(async trx => {
       const [invoice] = await this.options
         .db<Invoice>(this.invoicesTable)
@@ -285,6 +292,10 @@ class InvoicesService {
       });
   }
 
+  listCurrencies(): string[] {
+    return Object.values(currencies).map(currency => currency.code);
+  }
+
   async downloadInvoiceDocumentFile(
     invoiceId: string
   ): Promise<InvoiceDocumentFile | undefined> {
@@ -347,6 +358,10 @@ class InvoicesService {
       .returning('*');
 
     return updatedInvoice;
+  }
+
+  private isValidCurrency(currency: string): boolean {
+    return this.listCurrencies().includes(currency);
   }
 }
 

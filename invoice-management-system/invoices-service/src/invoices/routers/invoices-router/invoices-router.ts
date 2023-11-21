@@ -112,6 +112,16 @@ class InvoicesRouter {
       }
     );
 
+    router.get('/currencies', (req, res, next) => {
+      try {
+        const currencies = this.options.invoices.service.listCurrencies();
+
+        return res.json(currencies);
+      } catch (err) {
+        return next(err);
+      }
+    });
+
     router.get(
       '/:invoiceId',
       celebrate({

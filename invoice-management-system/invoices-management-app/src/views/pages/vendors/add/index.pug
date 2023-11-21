@@ -6,11 +6,9 @@ block content
   form(method="post")
     div
       label(for="name") Name 
-      input(id="name" type="text" name="name" minlength="1")
+      input(id="name" type="text" name="name" minlength="1" required)
     div
       label(for="email") Email 
-      input(id="email" type="email" name="email")
-    ul
-      each error in errors
-        li=error
+      input(id="email" type="email" name="email" required)
+    p=error
     button Add

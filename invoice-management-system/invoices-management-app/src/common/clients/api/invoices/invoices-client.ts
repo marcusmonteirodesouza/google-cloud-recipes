@@ -25,7 +25,7 @@ class InvoicesClient {
         `${this.options.baseUrl}/${invoiceId}`
       );
 
-      return invoice;
+      return this.transformInvoiceResponse(invoice);
     } catch (err) {
       throw this.tryMakeErrorResponse(err);
     }
@@ -50,6 +50,18 @@ class InvoicesClient {
       });
 
       return invoices.map(this.transformInvoiceResponse);
+    } catch (err) {
+      throw this.tryMakeErrorResponse(err);
+    }
+  }
+
+  async listCurrencies(): Promise<string[]> {
+    try {
+      const {data: currencies} = await axios.get(
+        `${this.options.baseUrl}/currencies`
+      );
+
+      return currencies;
     } catch (err) {
       throw this.tryMakeErrorResponse(err);
     }

@@ -36,7 +36,6 @@ class VendorsRouter {
       try {
         return res.render('vendors/add', {
           title: 'Add Vendor',
-          errors: [],
         });
       } catch (err) {
         return next(err);
@@ -53,7 +52,7 @@ class VendorsRouter {
           if (err instanceof ErrorResponse) {
             return res.render('vendors/add', {
               title: 'Add Vendor',
-              errors: [err.message],
+              error: err.message,
             });
           }
 

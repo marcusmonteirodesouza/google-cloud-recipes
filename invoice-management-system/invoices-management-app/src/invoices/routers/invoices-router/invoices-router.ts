@@ -59,6 +59,9 @@ class InvoicesRouter {
         const invoice =
           await this.options.apiClient.invoices.getInvoiceById(invoiceId);
 
+        const currencies =
+          await this.options.apiClient.invoices.listCurrencies();
+
         const vendor = await this.options.apiClient.vendors.getVendorById(
           invoice.vendorId
         );
@@ -69,6 +72,7 @@ class InvoicesRouter {
             ...invoice,
             vendorName: vendor.name,
           },
+          currencies,
         });
       } catch (err) {
         return next(err);
