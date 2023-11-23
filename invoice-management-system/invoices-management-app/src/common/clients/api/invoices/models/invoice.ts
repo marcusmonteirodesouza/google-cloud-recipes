@@ -1,3 +1,4 @@
+import {IDate} from '../../interfaces';
 import {InvoiceStatus} from './invoice-status';
 
 interface Invoice {
@@ -7,8 +8,8 @@ interface Invoice {
   readonly vendorInvoiceId: string;
   readonly vendorAddress: string | null | undefined;
   readonly vendorGooglePlaceId: string | null | undefined;
-  readonly date: Date | null | undefined;
-  readonly dueDate: Date | null | undefined;
+  readonly date: IDate | null | undefined;
+  readonly dueDate: IDate | null | undefined;
   readonly netAmount: number | null | undefined;
   readonly totalTaxAmount: number | null | undefined;
   readonly totalAmount: number | null | undefined;

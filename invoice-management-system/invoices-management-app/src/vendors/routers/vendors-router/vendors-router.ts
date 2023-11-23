@@ -48,6 +48,8 @@ class VendorsRouter {
 
         try {
           await this.options.apiClient.vendors.createVendor({name, email});
+
+          return res.redirect('/vendors');
         } catch (err) {
           if (err instanceof ErrorResponse) {
             return res.render('vendors/add', {
@@ -58,8 +60,6 @@ class VendorsRouter {
 
           throw err;
         }
-
-        return res.redirect('/vendors');
       } catch (err) {
         return next(err);
       }

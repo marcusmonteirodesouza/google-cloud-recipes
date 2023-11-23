@@ -1,6 +1,10 @@
 import {Router} from 'express';
 import {sortBy} from 'lodash';
-import {ApiClient, InvoiceStatus} from '../../../common/clients/api';
+import {
+  ApiClient,
+  ErrorResponse,
+  InvoiceStatus,
+} from '../../../common/clients/api';
 
 interface InvoicesRouterOptions {
   apiClient: ApiClient;
@@ -74,6 +78,73 @@ class InvoicesRouter {
           },
           currencies,
         });
+      } catch (err) {
+        return next(err);
+      }
+    });
+
+    router.post('/:invoiceId', async (req, res, next) => {
+      try {
+        const {invoiceId} = req.params;
+
+        const invoice =
+          await this.options.apiClient.invoices.getInvoiceById(invoiceId);
+
+        const currencies =
+          await this.options.apiClient.invoices.listCurrencies();
+
+        const vendor = await this.options.apiClient.vendors.getVendorById(
+          invoice.vendorId
+        );
+
+        const {
+          status,
+          vendorAddress,
+          date,
+          dueDate,
+          netAmount,
+          totalTaxAmount,
+          totalAmount,
+          currency,
+        } = req.body;
+
+        try {
+          const updatedInvoice =
+            await this.options.apiClient.invoices.updateInvoice(invoiceId, {
+              status,
+              vendorAddress,
+              date: date && {
+                year: Number.parseInt(date.slice(0, 4)),
+                month: Number.parseInt(date.slice(5, 7)),
+                day: Number.parseInt(date.slice(8, 11)),
+              },
+              dueDate: dueDate && {
+                year: Number.parseInt(dueDate.slice(0, 4)),
+                month: Number.parseInt(dueDate.slice(5, 7)),
+                day: Number.parseInt(dueDate.slice(8, 11)),
+              },
+              netAmount,
+              totalTaxAmount,
+              totalAmount,
+              currency,
+            });
+
+          return res.redirect(`/invoices/${updatedInvoice.id}`);
+        } catch (err) {
+          if (err instanceof ErrorResponse) {
+            return res.render('invoices/details', {
+              title: `Invoice Details - ${vendor.name} ${invoice.vendorInvoiceId}`,
+              invoice: {
+                ...invoice,
+                vendorName: vendor.name,
+              },
+              currencies,
+              error: err.message,
+            });
+          }
+
+          throw err;
+        }
       } catch (err) {
         return next(err);
       }

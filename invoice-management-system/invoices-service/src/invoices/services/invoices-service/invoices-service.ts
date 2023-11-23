@@ -5,8 +5,10 @@ import {AddressValidationClient} from '@googlemaps/addressvalidation';
 import mimeTypes from 'mime-types';
 import * as currencies from '@dinero.js/currencies';
 import {VendorsClient} from '../../../common/clients/vendors';
+import {IDate} from '../../../common/interfaces';
 import {Invoice, InvoiceDocument, InvoiceStatus} from '../../models';
-import {NotFoundError} from '../../../errors';
+import {AlreadyExistsError, NotFoundError} from '../../../errors';
+import {DatabaseError} from 'pg';
 
 interface InvoicesServiceOptions {
   db: Knex;
@@ -48,6 +50,13 @@ interface ListInvoicesOptions {
 
 interface UpdateInvoiceOptions {
   status?: InvoiceStatus;
+  vendorAddress?: string;
+  date?: IDate;
+  dueDate?: IDate;
+  netAmount?: number;
+  totalTaxAmount?: number;
+  totalAmount?: number;
+  currency?: string;
 }
 
 interface InvoiceDocumentFile {
@@ -57,6 +66,11 @@ interface InvoiceDocumentFile {
 
 interface CreateInvoiceOptions {
   document: InvoiceDocumentFile;
+}
+
+interface InvoiceRow extends Omit<Invoice, 'date' | 'dueDate'> {
+  date?: Date;
+  dueDate?: Date;
 }
 
 class InvoicesService {
@@ -127,14 +141,7 @@ class InvoicesService {
     let vendorGooglePlaceId: string | null | undefined;
 
     if (vendorAddress) {
-      const [validateAddressResponse] =
-        await this.options.google.addressValidation.client.validateAddress({
-          address: {
-            addressLines: [vendorAddress],
-          },
-        });
-
-      vendorGooglePlaceId = validateAddressResponse.result?.geocode?.placeId;
+      vendorGooglePlaceId = await this.getGooglePlaceId(vendorAddress);
     }
 
     const invoiceDateValue =
@@ -151,9 +158,7 @@ class InvoicesService {
       invoiceDateValue.day
     ) {
       invoiceDate = new Date(
-        invoiceDateValue.year,
-        invoiceDateValue.month,
-        invoiceDateValue.day
+        `${invoiceDateValue.year}-${invoiceDateValue.month}-${invoiceDateValue.day}`
       );
     }
 
@@ -171,9 +176,7 @@ class InvoicesService {
       invoiceDueDateValue.day
     ) {
       invoiceDueDate = new Date(
-        invoiceDueDateValue.year,
-        invoiceDueDateValue.month,
-        invoiceDueDateValue.day
+        `${invoiceDueDateValue.year}-${invoiceDueDateValue.month}-${invoiceDueDateValue.day}`
       );
     }
 
@@ -203,25 +206,43 @@ class InvoicesService {
       }
     }
 
-    const invoice = await this.options.db.transaction(async trx => {
-      const [invoice] = await this.options
-        .db<Invoice>(this.invoicesTable)
-        .insert({
-          status: InvoiceStatus.Created,
-          vendorId: vendor.id,
-          vendorInvoiceId,
-          vendorAddress,
-          vendorGooglePlaceId,
-          date: invoiceDate,
-          dueDate: invoiceDueDate,
-          netAmount: netAmount ? Number.parseFloat(netAmount) : null,
-          totalTaxAmount: totalTaxAmount
-            ? Number.parseFloat(totalTaxAmount)
-            : null,
-          totalAmount: totalAmount ? Number.parseFloat(totalAmount) : null,
-          currency,
-        })
-        .returning('*');
+    const invoiceRow = await this.options.db.transaction(async trx => {
+      let invoiceRow: InvoiceRow;
+
+      try {
+        [invoiceRow] = await this.options
+          .db<InvoiceRow>(this.invoicesTable)
+          .insert({
+            status: InvoiceStatus.Created,
+            vendorId: vendor.id,
+            vendorInvoiceId,
+            vendorAddress,
+            vendorGooglePlaceId,
+            date: invoiceDate,
+            dueDate: invoiceDueDate,
+            netAmount: netAmount ? Number.parseFloat(netAmount) : null,
+            totalTaxAmount: totalTaxAmount
+              ? Number.parseFloat(totalTaxAmount)
+              : null,
+            totalAmount: totalAmount ? Number.parseFloat(totalAmount) : null,
+            currency,
+          })
+          .returning('*');
+      } catch (err) {
+        if (err instanceof DatabaseError) {
+          if (err.code === '23505') {
+            if (
+              err.constraint === 'invoices_vendor_id_vendor_invoice_id_unique'
+            ) {
+              throw new AlreadyExistsError(
+                `Invoice ID ${vendorInvoiceId} already exists for Vendor ${vendor.name}`
+              );
+            }
+          }
+        }
+
+        throw err;
+      }
 
       const gcsFileExtension = mimeTypes.extension(options.document.mimeType);
 
@@ -235,10 +256,10 @@ class InvoicesService {
         this.options.google.storage.buckets.invoices.documents
       );
 
-      const gcsFile = gcsBucket.file(`${invoice.id}.${gcsFileExtension}`);
+      const gcsFile = gcsBucket.file(`${invoiceRow.id}.${gcsFileExtension}`);
 
       await trx<InvoiceDocument>(this.invoiceDocumentsTable).insert({
-        invoiceId: invoice.id,
+        invoiceId: invoiceRow.id,
         gcsBucket: gcsBucket.name,
         gcsFile: gcsFile.name,
       });
@@ -249,23 +270,27 @@ class InvoicesService {
         },
       });
 
-      return invoice;
+      return invoiceRow;
     });
 
-    return invoice;
+    return this.invoiceRowToInvoice(invoiceRow);
   }
 
   async getInvoiceById(invoiceId: string): Promise<Invoice | undefined> {
     const [invoice] = await this.options
-      .db<Invoice>(this.invoicesTable)
+      .db<InvoiceRow>(this.invoicesTable)
       .where({id: invoiceId});
 
-    return invoice;
+    if (!invoice) {
+      return;
+    }
+
+    return this.invoiceRowToInvoice(invoice);
   }
 
   async listInvoices(options?: ListInvoicesOptions): Promise<Invoice[]> {
-    return await this.options
-      .db<Invoice>(this.invoicesTable)
+    const invoiceRows = await this.options
+      .db<InvoiceRow>(this.invoicesTable)
       .modify(queryBuilder => {
         if (options?.ids) {
           queryBuilder.whereIn('id', options.ids);
@@ -290,6 +315,8 @@ class InvoicesService {
           );
         }
       });
+
+    return invoiceRows.map(this.invoiceRowToInvoice);
   }
 
   listCurrencies(): string[] {
@@ -343,25 +370,104 @@ class InvoicesService {
       throw new NotFoundError(`Invoice ${invoiceId} not found`);
     }
 
-    const [updatedInvoice] = await this.options
-      .db<Invoice>(this.invoicesTable)
+    const [updatedInvoiceRow] = await this.options
+      .db<InvoiceRow>(this.invoicesTable)
       .where({id: invoice.id})
-      .modify(queryBuilder => {
-        if (options.status) {
-          queryBuilder.update({status: options.status});
-        }
+      .modify(async queryBuilder => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const updateData: any = {};
 
         if (options.status) {
-          queryBuilder.update({updatedAt: new Date()});
+          updateData.status = options.status;
+        }
+
+        if (options.vendorAddress) {
+          const vendorGooglePlaceId = await this.getGooglePlaceId(
+            options.vendorAddress
+          );
+
+          updateData.vendorAddress = options.vendorAddress;
+          updateData.vendorGooglePlaceId = vendorGooglePlaceId;
+        }
+
+        if (options.date) {
+          updateData.date = new Date(
+            options.date.year,
+            options.date.month - 1,
+            options.date.day
+          );
+        }
+
+        if (options.dueDate) {
+          updateData.dueDate = new Date(
+            options.dueDate.year,
+            options.dueDate.month - 1,
+            options.dueDate.day
+          );
+        }
+
+        if (options.netAmount) {
+          updateData.netAmount = options.netAmount;
+        }
+
+        if (options.totalTaxAmount) {
+          updateData.totalTaxAmount = options.totalTaxAmount;
+        }
+
+        if (options.totalAmount) {
+          updateData.totalAmount = options.totalAmount;
+        }
+
+        if (options.currency) {
+          if (!this.isValidCurrency(options.currency)) {
+            throw new RangeError(`Invalid currency ${options.currency}`);
+          }
+
+          updateData.currency = options.currency;
+        }
+
+        if (Object.keys(updateData).length > 0) {
+          await queryBuilder.update({...updateData, updatedAt: new Date()});
         }
       })
       .returning('*');
 
-    return updatedInvoice;
+    return this.invoiceRowToInvoice(updatedInvoiceRow);
   }
 
   private isValidCurrency(currency: string): boolean {
     return this.listCurrencies().includes(currency);
+  }
+
+  private async getGooglePlaceId(address: string): Promise<string> {
+    const [validateAddressResponse] =
+      await this.options.google.addressValidation.client.validateAddress({
+        address: {
+          addressLines: [address],
+        },
+      });
+
+    if (!validateAddressResponse.result?.geocode?.placeId) {
+      throw new RangeError(`Invalid address ${address}`);
+    }
+
+    return validateAddressResponse.result?.geocode?.placeId;
+  }
+
+  private invoiceRowToInvoice(invoiceRow: InvoiceRow): Invoice {
+    return {
+      ...invoiceRow,
+      date: invoiceRow.date && {
+        year: invoiceRow.date.getFullYear(),
+        month: invoiceRow.date.getMonth() + 1,
+        day: invoiceRow.date.getDate(),
+      },
+      dueDate: invoiceRow.dueDate && {
+        year: invoiceRow.dueDate.getFullYear(),
+        month: invoiceRow.dueDate.getMonth() + 1,
+        day: invoiceRow.dueDate.getDate(),
+      },
+    };
   }
 }
 

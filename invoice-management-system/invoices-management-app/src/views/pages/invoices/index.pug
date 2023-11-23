@@ -20,7 +20,7 @@ block content
           td=invoice.vendorName
           td
             a(href=`/invoices/${invoice.id}`)=invoice.vendorInvoiceId
-          td=invoice.date ? invoice.date.toISOString().slice(0, 10) : invoice.date
-          td=invoice.dueDate ? invoice.dueDate.toISOString().slice(0, 10) : invoice.dueDate
+          td=invoice.date && new Date(invoice.date.year, invoice.date.month - 1, invoice.date.day).toISOString().slice(0, 10)
+          td=invoice.dueDate && new Date(invoice.dueDate.year, invoice.dueDate.month - 1, invoice.dueDate.day).toISOString().slice(0, 10)
           td #{invoice.currency} #{invoice.totalAmount}
           td=invoice.status

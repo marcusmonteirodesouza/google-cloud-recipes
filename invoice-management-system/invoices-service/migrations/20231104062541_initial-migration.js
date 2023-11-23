@@ -35,6 +35,8 @@ exports.up = async function (knex) {
       table.string('currency', 3);
 
       table.timestamps(true, true);
+
+      table.unique(['vendor_id', 'vendor_invoice_id']);
     });
   }
 

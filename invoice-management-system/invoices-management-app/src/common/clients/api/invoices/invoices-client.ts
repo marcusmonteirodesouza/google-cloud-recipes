@@ -1,6 +1,7 @@
 import axios, {isAxiosError} from 'axios';
 import {Invoice, InvoiceStatus} from './models';
 import {ErrorResponse} from '../errors';
+import {IDate} from '../interfaces';
 
 interface InvoicesClientOptions {
   baseUrl: string;
@@ -14,6 +15,17 @@ interface ListInvoicesOptions {
 interface OrderByClause {
   field: 'dueDate';
   direction: 'asc' | 'desc';
+}
+
+interface UpdateInvoiceOptions {
+  status?: InvoiceStatus;
+  vendorAddress?: string;
+  date?: IDate;
+  dueDate?: IDate;
+  netAmount?: number;
+  totalTaxAmount?: number;
+  totalAmount?: number;
+  currency?: string;
 }
 
 class InvoicesClient {
@@ -67,6 +79,22 @@ class InvoicesClient {
     }
   }
 
+  async updateInvoice(
+    invoiceId: string,
+    options: UpdateInvoiceOptions
+  ): Promise<Invoice> {
+    try {
+      const {data: invoice} = await axios.patch(
+        `${this.options.baseUrl}/${invoiceId}`,
+        options
+      );
+
+      return this.transformInvoiceResponse(invoice);
+    } catch (err) {
+      throw this.tryMakeErrorResponse(err);
+    }
+  }
+
   private orderByClauseToQueryParamClause(
     orderByClause: OrderByClause
   ): string {
@@ -76,8 +104,6 @@ class InvoicesClient {
   private transformInvoiceResponse(invoice: Invoice): Invoice {
     return {
       ...invoice,
-      date: invoice.date ? new Date(invoice.date) : invoice.date,
-      dueDate: invoice.dueDate ? new Date(invoice.dueDate) : invoice.dueDate,
       createdAt: new Date(invoice.createdAt),
       updatedAt: new Date(invoice.updatedAt),
     };

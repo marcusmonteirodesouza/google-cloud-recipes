@@ -1,0 +1,1 @@
+export {IDate} from './idate';

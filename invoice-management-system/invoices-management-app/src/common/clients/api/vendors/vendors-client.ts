@@ -25,10 +25,7 @@ class VendorsClient {
 
   async createVendor(options: CreateVendorOptions): Promise<Vendor> {
     try {
-      const {data: vendor} = await axios.post(this.options.baseUrl, {
-        name: options.name,
-        email: options.email,
-      });
+      const {data: vendor} = await axios.post(this.options.baseUrl, options);
 
       return this.transformVendorResponse(vendor);
     } catch (err) {

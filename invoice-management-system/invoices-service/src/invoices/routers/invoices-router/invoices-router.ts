@@ -194,17 +194,50 @@ class InvoicesRouter {
       celebrate({
         [Segments.BODY]: Joi.object().keys({
           status: Joi.string().valid(...Object.values(InvoiceStatus)),
+          vendorAddress: Joi.string(),
+          date: Joi.object().keys({
+            year: Joi.number().integer().required(),
+            month: Joi.number().integer().min(1).max(12).required(),
+            day: Joi.number().integer().min(1).max(31).required(),
+          }),
+          dueDate: Joi.object().keys({
+            year: Joi.number().integer().required(),
+            month: Joi.number().integer().min(1).max(12).required(),
+            day: Joi.number().integer().min(1).max(31).required(),
+          }),
+          netAmount: Joi.number(),
+          totalTaxAmount: Joi.number(),
+          totalAmount: Joi.number(),
+          currency: Joi.string(),
         }),
       }),
       async (req, res, next) => {
         try {
           const {invoiceId} = req.params;
 
-          const {status} = req.body;
+          const {
+            status,
+            vendorAddress,
+            date,
+            dueDate,
+            netAmount,
+            totalTaxAmount,
+            totalAmount,
+            currency,
+          } = req.body;
 
           const invoice = await this.options.invoices.service.updateInvoice(
             invoiceId,
-            {status}
+            {
+              status,
+              vendorAddress,
+              date,
+              dueDate,
+              netAmount,
+              totalTaxAmount,
+              totalAmount,
+              currency,
+            }
           );
 
           return res.json(invoice);
