@@ -6,6 +6,12 @@ block content
   h2 #{invoice.vendorName} - Invoice #{invoice.vendorInvoiceId}
   form(method="post")
     div
+      label(for="status") Status 
+      select(id="status" name="status")
+        option(value="created" selected=invoice.status === "created") Created
+        option(value="approved" selected=invoice.status === "approved") Approved
+        option(value="notApproved" selected=invoice.status === "notApproved") Not Approved
+    div
       label(for="address") Address 
       input(id="address" type="textarea" name="address" minlength="1" value=invoice.vendorAddress)
     div
@@ -27,6 +33,6 @@ block content
       label(for="currency") Currency 
       select(id="currency" name="currency")
         each currency in currencies
-          option(value=`${currency}` selected=invoice.currency === currency)=currency
+          option(value=currency selected=invoice.currency === currency)=currency
     p=error
     button Update
