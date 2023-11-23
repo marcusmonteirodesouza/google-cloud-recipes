@@ -63,6 +63,11 @@ class InvoicesRouter {
         const invoice =
           await this.options.apiClient.invoices.getInvoiceById(invoiceId);
 
+        const invoiceDocumentFile =
+          await this.options.apiClient.invoices.downloadInvoiceDocumentFile(
+            invoiceId
+          );
+
         const currencies =
           await this.options.apiClient.invoices.listCurrencies();
 
@@ -75,6 +80,10 @@ class InvoicesRouter {
           invoice: {
             ...invoice,
             vendorName: vendor.name,
+          },
+          invoiceDocumentFile: {
+            content: invoiceDocumentFile.content.toString('base64'),
+            contentType: invoiceDocumentFile.contentType,
           },
           currencies,
         });

@@ -1,2 +1,2 @@
 export {InvoicesClient} from './invoices-client';
-export {Invoice, InvoiceStatus} from './models';
+export {Invoice, InvoiceStatus, InvoiceDocumentFile} from './models';

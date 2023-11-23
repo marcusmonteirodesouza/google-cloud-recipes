@@ -1,5 +1,5 @@
 import axios, {isAxiosError} from 'axios';
-import {Invoice, InvoiceStatus} from './models';
+import {Invoice, InvoiceDocumentFile, InvoiceStatus} from './models';
 import {ErrorResponse} from '../errors';
 import {IDate} from '../interfaces';
 
@@ -38,6 +38,28 @@ class InvoicesClient {
       );
 
       return this.transformInvoiceResponse(invoice);
+    } catch (err) {
+      throw this.tryMakeErrorResponse(err);
+    }
+  }
+
+  async downloadInvoiceDocumentFile(
+    invoiceId: string
+  ): Promise<InvoiceDocumentFile> {
+    try {
+      const {data, headers} = await axios.get(
+        `${this.options.baseUrl}/${invoiceId}/download`,
+        {
+          responseType: 'arraybuffer',
+        }
+      );
+
+      const content = Buffer.from(data, 'binary');
+
+      return {
+        content,
+        contentType: headers['content-type']?.toString(),
+      };
     } catch (err) {
       throw this.tryMakeErrorResponse(err);
     }
