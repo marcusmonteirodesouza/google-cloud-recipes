@@ -7,7 +7,8 @@ resource "google_compute_network" "vpc" {
 
 resource "google_compute_subnetwork" "proxy_only_northamerica_northeast1" {
   name          = "${var.company_name}-${var.environment}-proxy-na-ne1-subnet"
-  ip_cidr_range = "10.162.0.0/23"
+#   ip_cidr_range = "10.162.0.0/23"
+  ip_cidr_range = "10.162.0.0/24"
   region        = "northamerica-northeast1"
   network       = google_compute_network.vpc.id
   purpose       = "REGIONAL_MANAGED_PROXY"

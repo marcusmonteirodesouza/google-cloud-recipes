@@ -20,6 +20,13 @@ provider "docker" {
   }
 }
 
+provider "acme" {
+  # staging
+  # server_url = "https://acme-staging-v02.api.letsencrypt.org/directory"
+  # production
+  server_url = "https://acme-v02.api.letsencrypt.org/directory"
+}
+
 data "google_client_config" "default" {
 }
 
@@ -58,14 +65,25 @@ module "api" {
 resource "google_compute_address" "regional_external_application_load_balancer" {
   name         = "regional-external-application-lb-address"
   network_tier = "STANDARD"
+  depends_on = [
+    module.network
+  ]
 }
 
 module "regional_external_application_load_balancer" {
   source = "./modules/regional_external_application_load_balancer"
 
   network_name                = module.network.network_name
-  ssl_certificate             = var.ssl_certificate
-  ssl_certificate_private_key = var.ssl_certificate_private_key
+#   ssl_certificate             = var.ssl_certificate
+#   ssl_certificate_private_key = var.ssl_certificate_private_key
   google_compute_address_id   = google_compute_address.regional_external_application_load_balancer.id
-  api_cloud_run_service_name  = module.api.api_cloud_run_service_name
+  api_cloud_run_service_name = "hello"
+  ssl_certificate = "${acme_certificate.certificate.certificate_pem}"
+  ssl_certificate_private_key = "${tls_private_key.cert_private_key.private_key_pem}"
+#   ssl_certificate_private_key = "${acme_certificate.certificate.private_key_pem}"
+#   api_cloud_run_service_name  = module.api.api_cloud_run_service_name
+  depends_on = [
+    acme_certificate.certificate,
+    module.network
+  ]
 }

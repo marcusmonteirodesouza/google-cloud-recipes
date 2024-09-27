@@ -39,8 +39,15 @@ resource "google_compute_region_url_map" "lb_default" {
   }
 }
 
+resource "random_string" "random" {
+  length           = 3
+  special          = false
+  upper = false
+
+}
+
 resource "google_compute_region_ssl_certificate" "lb_default" {
-  name        = "${local.service_name}-self-managed-ssl-cert"
+  name        = "${local.service_name}-${random_string.random.result}"
   certificate = var.ssl_certificate
   private_key = var.ssl_certificate_private_key
 

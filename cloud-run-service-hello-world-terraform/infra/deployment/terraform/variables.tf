@@ -10,15 +10,16 @@ variable "environment" {
 variable "project_id" {
   type        = string
   description = "The project ID."
+  default = "lb-cert"
 }
 
-variable "ssl_certificate" {
-  type        = string
-  description = "The SSL certificate in PEM format."
-}
+# variable "ssl_certificate" {
+#   type        = string
+#   description = "The SSL certificate in PEM format."
+# }
 
-variable "ssl_certificate_private_key" {
-  type        = string
-  description = "The SSL certificate write-only private key in PEM format."
-  sensitive   = true
-}
+# variable "ssl_certificate_private_key" {
+#   type        = string
+#   description = "The SSL certificate write-only private key in PEM format."
+#   sensitive   = true
+# }
